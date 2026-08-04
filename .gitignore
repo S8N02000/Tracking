@@ -1,0 +1,26 @@
+# Données personnelles — NE PAS COMMITER
+*.db
+nutrition.db
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+
+# CSV sources personnelles (données nutritionnelles de l'utilisateur)
+foods/*.csv
+recipes/*.csv
+sport/*.csv
+log/
+stock/
+
+# Cibles personnelles
+targets.yaml
+
+# Scripts obsolètes / migration
+scripts/
+
+# OS
+.DS_Store
+*.swp
+*.swo
