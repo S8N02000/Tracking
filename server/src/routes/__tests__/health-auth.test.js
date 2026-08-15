@@ -3,6 +3,9 @@ import request from 'supertest';
 import app from '../../app.js';
 
 describe('Health and Auth Endpoints', () => {
+  beforeAll(() => {
+    process.env.ADMIN_SECRET = 'test_secret';
+  });
   it('GET /api/health should be publicly accessible without token', async () => {
     const res = await request(app).get('/api/health');
     expect(res.status).toBe(200);
@@ -26,7 +29,7 @@ describe('Health and Auth Endpoints', () => {
   });
 
   it('POST /api/auth/verify with valid token should return 200 { valid: true }', async () => {
-    const adminSecret = process.env.ADMIN_SECRET || 'secret_admin_token_123456';
+    const adminSecret = process.env.ADMIN_SECRET;
     const res = await request(app)
       .post('/api/auth/verify')
       .set('Authorization', `Bearer ${adminSecret}`);

@@ -8,7 +8,7 @@ import fs from 'fs';
 
 describe('Complete REST API Integration Tests', () => {
   const tempDbPath = path.resolve(process.cwd(), 'temp_api_test.db');
-  const adminSecret = process.env.ADMIN_SECRET || 'secret_admin_token_123456';
+  const adminSecret = process.env.ADMIN_SECRET || 'test_secret';
 
   beforeEach(() => {
     process.env.DB_PATH = tempDbPath;

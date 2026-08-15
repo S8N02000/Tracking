@@ -19,7 +19,7 @@ export function authMiddleware(req, res, next) {
   }
 
   const authHeader = req.headers.authorization;
-  const adminSecret = process.env.ADMIN_SECRET || 'secret_admin_token_123456';
+  const adminSecret = process.env.ADMIN_SECRET;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({
