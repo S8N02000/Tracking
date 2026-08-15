@@ -179,57 +179,68 @@ def get_day_meals(conn: sqlite3.Connection, date_str: str) -> list[dict]:
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.vit_a_mcg_100g,0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.vit_a_mcg_per_portion,0) * ml.quantity_g /
+                         (r.total_weight_g / r.portions)
                 END AS vit_a_mcg,
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.vit_b1_mg_100g,0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.vit_b1_mg_per_portion,0) * ml.quantity_g /
+                         (r.total_weight_g / r.portions)
                 END AS vit_b1_mg,
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.vit_b2_mg_100g,0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.vit_b2_mg_per_portion,0) * ml.quantity_g /
+                         (r.total_weight_g / r.portions)
                 END AS vit_b2_mg,
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.vit_b3_mg_100g,0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.vit_b3_mg_per_portion,0) * ml.quantity_g /
+                         (r.total_weight_g / r.portions)
                 END AS vit_b3_mg,
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.vit_b5_mg_100g,0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.vit_b5_mg_per_portion,0) * ml.quantity_g /
+                         (r.total_weight_g / r.portions)
                 END AS vit_b5_mg,
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.vit_b6_mg_100g,0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.vit_b6_mg_per_portion,0) * ml.quantity_g /
+                         (r.total_weight_g / r.portions)
                 END AS vit_b6_mg,
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.vit_b9_mcg_100g,0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.vit_b9_mcg_per_portion,0) * ml.quantity_g /
+                         (r.total_weight_g / r.portions)
                 END AS vit_b9_mcg,
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.vit_b12_mcg_100g,0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.vit_b12_mcg_per_portion,0) * ml.quantity_g /
+                         (r.total_weight_g / r.portions)
                 END AS vit_b12_mcg,
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.vit_c_mg_100g,0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.vit_c_mg_per_portion,0) * ml.quantity_g /
+                         (r.total_weight_g / r.portions)
                 END AS vit_c_mg,
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.vit_d_mcg_100g,0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.vit_d_mcg_per_portion,0) * ml.quantity_g /
+                         (r.total_weight_g / r.portions)
                 END AS vit_d_mcg,
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.vit_e_mg_100g,0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.vit_e_mg_per_portion,0) * ml.quantity_g /
+                         (r.total_weight_g / r.portions)
                 END AS vit_e_mg,
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN

@@ -81,6 +81,12 @@ PER_PORTION_MAP = {
     "vit_d_mcg_100g":    "vit_d_mcg_per_portion",
     "vit_b12_mcg_100g":  "vit_b12_mcg_per_portion",
     "vit_e_mg_100g":     "vit_e_mg_per_portion",
+    "vit_b1_mg_100g":    "vit_b1_mg_per_portion",
+    "vit_b2_mg_100g":    "vit_b2_mg_per_portion",
+    "vit_b3_mg_100g":    "vit_b3_mg_per_portion",
+    "vit_b5_mg_100g":    "vit_b5_mg_per_portion",
+    "vit_b6_mg_100g":    "vit_b6_mg_per_portion",
+    "vit_b9_mcg_100g":   "vit_b9_mcg_per_portion",
 }
 
 
