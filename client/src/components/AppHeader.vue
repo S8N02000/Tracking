@@ -36,6 +36,15 @@
         </router-link>
 
         <router-link
+          to="/diagnostics"
+          class="flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all"
+          :class="$route.path === '/diagnostics' ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20 font-semibold' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'"
+        >
+          <Stethoscope class="w-4 h-4" />
+          <span>Bilan & Carences</span>
+        </router-link>
+
+        <router-link
           to="/logs"
           class="flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all"
           :class="$route.path === '/logs' ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20 font-semibold' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'"
@@ -143,6 +152,16 @@
           </router-link>
 
           <router-link
+            to="/diagnostics"
+            @click="mobileMenuOpen = false"
+            class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-sm font-medium"
+            :class="$route.path === '/diagnostics' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-300 hover:bg-slate-800'"
+          >
+            <Stethoscope class="w-4 h-4" />
+            <span>Carences</span>
+          </router-link>
+
+          <router-link
             to="/logs"
             @click="mobileMenuOpen = false"
             class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-sm font-medium"
@@ -247,7 +266,7 @@
 import { ref } from 'vue';
 import { useAuthStore } from '@/stores/authStore.js';
 import {
-  LayoutDashboard, LineChart, Calendar, UtensilsCrossed,
+  LayoutDashboard, LineChart, Stethoscope, Calendar, UtensilsCrossed,
   BookOpen, Activity, Lock, Unlock, Menu, X
 } from 'lucide-vue-next';
 

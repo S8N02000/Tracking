@@ -2,7 +2,8 @@ import { Router } from 'express';
 import {
   getCorrelationSeries,
   getMicronutrientsRadar,
-  getMealDistribution
+  getMealDistribution,
+  getClinicalDiagnostics
 } from '../services/analyticsService.js';
 
 const router = Router();
@@ -49,4 +50,19 @@ router.get('/analytics/meal-distribution', (req, res, next) => {
   }
 });
 
+// GET /api/analytics/diagnostics?start=YYYY-MM-DD&end=YYYY-MM-DD
+router.get('/analytics/diagnostics', (req, res, next) => {
+  try {
+    const today = new Date().toISOString().substring(0, 10);
+    const start = req.query.start || today;
+    const end = req.query.end || today;
+
+    const data = getClinicalDiagnostics(start, end);
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;
+

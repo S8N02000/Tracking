@@ -6,7 +6,8 @@ import { getDatabase, closeDatabase } from '../../database/db.js';
 import {
   getCorrelationSeries,
   getMicronutrientsRadar,
-  getMealDistribution
+  getMealDistribution,
+  getClinicalDiagnostics
 } from '../analyticsService.js';
 
 describe('Analytics Service Unit Tests', () => {
@@ -34,4 +35,23 @@ describe('Analytics Service Unit Tests', () => {
     const dist = getMealDistribution('2026-08-01', '2026-08-05', db);
     expect(dist.distribution).toBeDefined();
   });
+
+  it('should calculate clinical diagnostics with deficiency flags and ratios correctly', () => {
+    runMigrations(tempDbPath);
+    const db = getDatabase(tempDbPath);
+
+    const diag = getClinicalDiagnostics('2026-08-01', '2026-08-07', db);
+    expect(diag.summary.total_days).toBe(7);
+    expect(diag.ratios.length).toBeGreaterThanOrEqual(7);
+    expect(diag.nutrients.length).toBeGreaterThanOrEqual(25);
+
+    // Verify presence of essential clinical ratios
+    const omegaRatio = diag.ratios.find((r) => r.id === 'ratio_omega6_omega3');
+    expect(omegaRatio).toBeDefined();
+    expect(omegaRatio.explanation).toBeDefined();
+
+    const potSodRatio = diag.ratios.find((r) => r.id === 'ratio_potassium_sodium');
+    expect(potSodRatio).toBeDefined();
+  });
 });
+

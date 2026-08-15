@@ -3,22 +3,25 @@ import { getDatabase } from '../database/db.js';
 
 const router = Router();
 
-// GET /api/meals?date=YYYY-MM-DD
+// GET /api/meals?date=YYYY-MM-DD or ?start=YYYY-MM-DD&end=YYYY-MM-DD
 router.get('/meals', (req, res) => {
   const db = getDatabase();
-  const { date } = req.query;
+  const { date, start, end } = req.query;
 
   let sql = `
     SELECT ml.*,
-           f.name as food_name, f.category as food_category, f.energy_kcal_100g, f.proteins_g_100g, f.carbohydrates_g_100g, f.fat_g_100g,
-           r.name as recipe_name, r.energy_kcal_per_portion, r.proteins_g_per_portion, r.carbohydrates_g_per_portion, r.fat_g_per_portion, r.total_weight_g as recipe_total_weight, r.portions as recipe_portions
+           f.name as food_name, f.category as food_category, f.energy_kcal_100g, f.proteins_g_100g, f.carbohydrates_g_100g, f.fat_g_100g, f.fiber_g_100g,
+           r.name as recipe_name, r.energy_kcal_per_portion, r.proteins_g_per_portion, r.carbohydrates_g_per_portion, r.fat_g_per_portion, r.fiber_g_per_portion, r.total_weight_g as recipe_total_weight, r.portions as recipe_portions
     FROM meal_log ml
     LEFT JOIN foods f ON f.id = ml.food_id
     LEFT JOIN recipes r ON r.id = ml.recipe_id
   `;
   const params = [];
 
-  if (date) {
+  if (start && end) {
+    sql += ' WHERE ml.date_ BETWEEN ? AND ?';
+    params.push(start, end);
+  } else if (date) {
     sql += ' WHERE ml.date_ = ?';
     params.push(date);
   }
