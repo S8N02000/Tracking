@@ -1,0 +1,447 @@
+<template>
+  <div class="space-y-6">
+    <!-- Top Bar -->
+    <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <UtensilsCrossed class="w-6 h-6 text-cyan-400" />
+          Base de Données Alimentaire (35 Nutriments Éditables)
+        </h2>
+        <p class="text-xs text-slate-400">Recherche, édition complète de tous les nutriments, minéraux et vitamines</p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <button
+          @click="showOffModal = true"
+          class="flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition"
+        >
+          <Barcode class="w-4 h-4" />
+          <span>Import Open Food Facts</span>
+        </button>
+
+        <button
+          v-if="authStore.isAuthenticated"
+          @click="openAddModal"
+          class="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-cyan-500 text-slate-950 hover:bg-cyan-400 shadow-md shadow-cyan-500/20"
+        >
+          <Plus class="w-4 h-4" />
+          <span>Nouvel aliment</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters & Search Bar -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="relative md:col-span-2">
+        <Search class="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
+        <input
+          v-model="foodsStore.searchQuery"
+          @input="foodsStore.fetchFoods()"
+          type="text"
+          placeholder="Rechercher par nom ou marque..."
+          class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-cyan-500 font-sans"
+        />
+      </div>
+
+      <div>
+        <select
+          v-model="foodsStore.selectedCategory"
+          @change="foodsStore.fetchFoods()"
+          class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-cyan-500 font-sans"
+        >
+          <option value="">Toutes les catégories</option>
+          <option value="produit_laitier">Produit Laitier</option>
+          <option value="viande">Viande</option>
+          <option value="poisson">Poisson</option>
+          <option value="oeuf">Œuf</option>
+          <option value="legume">Légume</option>
+          <option value="fruit">Fruit</option>
+          <option value="cereale">Céréale</option>
+          <option value="legumineuse">Légumineuse</option>
+          <option value="matière_grasse">Matière Grasse</option>
+          <option value="sucre">Sucre</option>
+          <option value="epice">Épice</option>
+          <option value="condiment">Condiment</option>
+          <option value="boisson">Boisson</option>
+          <option value="supplement">Supplément</option>
+          <option value="plat_prepare">Plat Préparé</option>
+          <option value="autre">Autre</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Foods Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div
+        v-for="food in foodsStore.foods"
+        :key="food.id"
+        class="glass-panel p-5 rounded-2xl border border-slate-800/80 hover:border-slate-700 transition space-y-3 flex flex-col justify-between"
+      >
+        <div>
+          <div class="flex items-start justify-between">
+            <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-slate-800 text-cyan-400 tracking-wider">
+              {{ food.category }}
+            </span>
+            <span class="text-xs text-slate-500 font-mono">ID: #{{ food.id }}</span>
+          </div>
+
+          <h3 class="text-base font-bold text-white mt-2">{{ food.name }}</h3>
+          <p v-if="food.brand" class="text-xs text-slate-400">{{ food.brand }}</p>
+        </div>
+
+        <div class="grid grid-cols-4 gap-2 pt-3 border-t border-slate-800 text-center font-mono text-xs">
+          <div>
+            <span class="block text-[10px] text-slate-500 uppercase">Kcal</span>
+            <span class="font-bold text-cyan-300">{{ food.energy_kcal_100g || 0 }}</span>
+          </div>
+          <div>
+            <span class="block text-[10px] text-slate-500 uppercase">Prot.</span>
+            <span class="font-bold text-rose-300">{{ food.proteins_g_100g || 0 }}g</span>
+          </div>
+          <div>
+            <span class="block text-[10px] text-slate-500 uppercase">Gluc.</span>
+            <span class="font-bold text-amber-300">{{ food.carbohydrates_g_100g || 0 }}g</span>
+          </div>
+          <div>
+            <span class="block text-[10px] text-slate-500 uppercase">Lip.</span>
+            <span class="font-bold text-yellow-300">{{ food.fat_g_100g || 0 }}g</span>
+          </div>
+        </div>
+
+        <div v-if="authStore.isAuthenticated" class="flex justify-end space-x-3 pt-2 border-t border-slate-800/60">
+          <button @click="openEditModal(food)" class="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-semibold">
+            <Edit class="w-3.5 h-3.5" /> Éditer (35 Nutriments)
+          </button>
+          <button @click="foodsStore.deleteFood(food.id)" class="text-xs text-rose-400 hover:underline flex items-center gap-1">
+            <Trash2 class="w-3.5 h-3.5" /> Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Open Food Facts -->
+    <div v-if="showOffModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="glass-panel max-w-2xl w-full rounded-2xl p-6 border border-slate-800 shadow-2xl space-y-4">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <Barcode class="w-5 h-5 text-emerald-400" />
+          Recherche & Import Open Food Facts
+        </h3>
+
+        <div class="flex space-x-2">
+          <input
+            v-model="offQuery"
+            type="text"
+            placeholder="Saisissez un nom de produit ou un code-barres (ex: 3017620422003)..."
+            class="flex-1 px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm"
+          />
+          <button
+            @click="handleOffSearch"
+            class="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 text-sm font-semibold hover:bg-emerald-400"
+          >
+            Rechercher
+          </button>
+        </div>
+
+        <div v-if="foodsStore.offSearching" class="py-8 text-center text-slate-400 text-sm">
+          Recherche sur l'API Open Food Facts en cours...
+        </div>
+
+        <div v-else class="max-h-80 overflow-y-auto space-y-2">
+          <div
+            v-for="(item, idx) in foodsStore.offSearchResults"
+            :key="idx"
+            class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between"
+          >
+            <div>
+              <p class="font-bold text-white text-sm">{{ item.name }}</p>
+              <p class="text-xs text-slate-400">{{ item.brand }} • {{ item.energy_kcal_100g || 0 }} kcal / 100g</p>
+            </div>
+            <button
+              v-if="authStore.isAuthenticated"
+              @click="importOffItem(item)"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-500 text-slate-950 hover:bg-cyan-400"
+            >
+              Importer
+            </button>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button @click="showOffModal = false" class="px-4 py-2 rounded-xl text-sm text-slate-400">Fermer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🌟 FULL 35-NUTRIENT TABBED EDIT MODAL -->
+    <div v-if="showFoodFormModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="glass-panel max-w-3xl w-full rounded-2xl p-6 border border-slate-800 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <h3 class="text-lg font-bold text-white flex items-center justify-between">
+          <span>{{ editingFoodId ? 'Édition Aliment #' + editingFoodId : 'Créer un Aliment (35 Nutriments)' }}</span>
+          <span class="text-xs font-mono text-cyan-400">Échelle pour 100g</span>
+        </h3>
+
+        <!-- Tab Bar -->
+        <div class="flex space-x-2 border-b border-slate-800 pb-2 text-xs font-mono overflow-x-auto">
+          <button
+            type="button"
+            @click="activeTab = 'macros'"
+            class="px-3 py-1.5 rounded-lg transition"
+            :class="activeTab === 'macros' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'"
+          >
+            Macros & Bases
+          </button>
+          <button
+            type="button"
+            @click="activeTab = 'fats'"
+            class="px-3 py-1.5 rounded-lg transition"
+            :class="activeTab === 'fats' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'"
+          >
+            Lipides & Omégas
+          </button>
+          <button
+            type="button"
+            @click="activeTab = 'minerals'"
+            class="px-3 py-1.5 rounded-lg transition"
+            :class="activeTab === 'minerals' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'"
+          >
+            Minéraux & Traces
+          </button>
+          <button
+            type="button"
+            @click="activeTab = 'vitamins'"
+            class="px-3 py-1.5 rounded-lg transition"
+            :class="activeTab === 'vitamins' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'"
+          >
+            Vitamines
+          </button>
+        </div>
+
+        <form @submit.prevent="submitFoodForm">
+          <!-- TAB 1: MACROS & BASE -->
+          <div v-show="activeTab === 'macros'" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="md:col-span-2">
+              <label class="block text-slate-400 mb-1">Nom de l'aliment *</label>
+              <input v-model="foodForm.name" type="text" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm" required />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Marque / Enseigne</label>
+              <input v-model="foodForm.brand" type="text" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Catégorie *</label>
+              <select v-model="foodForm.category" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm" required>
+                <option value="produit_laitier">Produit Laitier</option>
+                <option value="viande">Viande</option>
+                <option value="poisson">Poisson</option>
+                <option value="oeuf">Œuf</option>
+                <option value="legume">Légume</option>
+                <option value="fruit">Fruit</option>
+                <option value="cereale">Céréale</option>
+                <option value="legumineuse">Légumineuse</option>
+                <option value="matière_grasse">Matière Grasse</option>
+                <option value="sucre">Sucre</option>
+                <option value="epice">Épice</option>
+                <option value="condiment">Condiment</option>
+                <option value="boisson">Boisson</option>
+                <option value="supplement">Supplément</option>
+                <option value="plat_prepare">Plat Préparé</option>
+                <option value="autre">Autre</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Énergie (kcal / 100g)</label>
+              <input v-model.number="foodForm.energy_kcal_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Protéines (g / 100g)</label>
+              <input v-model.number="foodForm.proteins_g_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Glucides (g / 100g)</label>
+              <input v-model.number="foodForm.carbohydrates_g_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Sucres (g / 100g)</label>
+              <input v-model.number="foodForm.sugars_g_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Lipides Totaux (g / 100g)</label>
+              <input v-model.number="foodForm.fat_g_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Fibres (g / 100g)</label>
+              <input v-model.number="foodForm.fiber_g_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Sel (g / 100g)</label>
+              <input v-model.number="foodForm.salt_g_100g" type="number" step="0.01" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Sodium (mg / 100g)</label>
+              <input v-model.number="foodForm.sodium_mg_100g" type="number" step="1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+          </div>
+
+          <!-- TAB 2: FATS & OMEGAS -->
+          <div v-show="activeTab === 'fats'" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div>
+              <label class="block text-slate-400 mb-1">Lipides Saturés (g)</label>
+              <input v-model.number="foodForm.saturated_fat_g_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Mono-insaturés (g)</label>
+              <input v-model.number="foodForm.monounsaturated_fat_g_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Poly-insaturés (g)</label>
+              <input v-model.number="foodForm.polyunsaturated_fat_g_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Oméga-3 (g)</label>
+              <input v-model.number="foodForm.omega_3_g_100g" type="number" step="0.01" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Oméga-6 (g)</label>
+              <input v-model.number="foodForm.omega_6_g_100g" type="number" step="0.01" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Gras Trans (g)</label>
+              <input v-model.number="foodForm.trans_fat_g_100g" type="number" step="0.01" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Cholestérol (mg)</label>
+              <input v-model.number="foodForm.cholesterol_mg_100g" type="number" step="1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" />
+            </div>
+          </div>
+
+          <!-- TAB 3: MINERALS -->
+          <div v-show="activeTab === 'minerals'" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div><label class="block text-slate-400 mb-1">Calcium (mg)</label><input v-model.number="foodForm.calcium_mg_100g" type="number" step="1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Fer (mg)</label><input v-model.number="foodForm.iron_mg_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Magnésium (mg)</label><input v-model.number="foodForm.magnesium_mg_100g" type="number" step="1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Phosphore (mg)</label><input v-model.number="foodForm.phosphorus_mg_100g" type="number" step="1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Potassium (mg)</label><input v-model.number="foodForm.potassium_mg_100g" type="number" step="1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Zinc (mg)</label><input v-model.number="foodForm.zinc_mg_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Cuivre (mg)</label><input v-model.number="foodForm.copper_mg_100g" type="number" step="0.01" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Manganèse (mg)</label><input v-model.number="foodForm.manganese_mg_100g" type="number" step="0.01" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Sélénium (µg)</label><input v-model.number="foodForm.selenium_mcg_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Iode (µg)</label><input v-model.number="foodForm.iodine_mcg_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+          </div>
+
+          <!-- TAB 4: VITAMINS -->
+          <div v-show="activeTab === 'vitamins'" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div><label class="block text-slate-400 mb-1">Vitamine A (µg)</label><input v-model.number="foodForm.vit_a_mcg_100g" type="number" step="1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Vitamine D (µg)</label><input v-model.number="foodForm.vit_d_mcg_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Vitamine E (mg)</label><input v-model.number="foodForm.vit_e_mg_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Vitamine K (µg)</label><input v-model.number="foodForm.vit_k_mcg_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Vitamine C (mg)</label><input v-model.number="foodForm.vit_c_mg_100g" type="number" step="1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Vit B1 Thiamine (mg)</label><input v-model.number="foodForm.vit_b1_mg_100g" type="number" step="0.01" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Vit B2 Riboflavine (mg)</label><input v-model.number="foodForm.vit_b2_mg_100g" type="number" step="0.01" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Vit B3 Niacine (mg)</label><input v-model.number="foodForm.vit_b3_mg_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Vit B5 Pantothénique (mg)</label><input v-model.number="foodForm.vit_b5_mg_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Vit B6 Pyridoxine (mg)</label><input v-model.number="foodForm.vit_b6_mg_100g" type="number" step="0.01" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Vit B9 Folates (µg)</label><input v-model.number="foodForm.vit_b9_mcg_100g" type="number" step="1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Vit B12 Cobalamine (µg)</label><input v-model.number="foodForm.vit_b12_mcg_100g" type="number" step="0.01" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+          </div>
+
+          <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-slate-800">
+            <button type="button" @click="showFoodFormModal = false" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-400">Annuler</button>
+            <button type="submit" class="px-5 py-2 rounded-xl text-sm font-semibold bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20">
+              {{ editingFoodId ? 'Enregistrer Modifications' : 'Créer Aliment' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useFoodsStore } from '@/stores/foodsStore.js';
+import { useAuthStore } from '@/stores/authStore.js';
+import { UtensilsCrossed, Plus, Search, Barcode, Trash2, Edit } from 'lucide-vue-next';
+
+const foodsStore = useFoodsStore();
+const authStore = useAuthStore();
+
+const showOffModal = ref(false);
+const showFoodFormModal = ref(false);
+const editingFoodId = ref(null);
+const activeTab = ref('macros');
+const offQuery = ref('');
+
+const emptyFoodObj = {
+  name: '', brand: '', category: 'autre',
+  energy_kcal_100g: 0, proteins_g_100g: 0, carbohydrates_g_100g: 0, sugars_g_100g: 0,
+  fat_g_100g: 0, saturated_fat_g_100g: 0, monounsaturated_fat_g_100g: 0, polyunsaturated_fat_g_100g: 0,
+  omega_3_g_100g: 0, omega_6_g_100g: 0, trans_fat_g_100g: 0, cholesterol_mg_100g: 0,
+  fiber_g_100g: 0, salt_g_100g: 0, sodium_mg_100g: 0,
+  calcium_mg_100g: 0, iron_mg_100g: 0, magnesium_mg_100g: 0, phosphorus_mg_100g: 0,
+  potassium_mg_100g: 0, zinc_mg_100g: 0, copper_mg_100g: 0, manganese_mg_100g: 0,
+  selenium_mcg_100g: 0, iodine_mcg_100g: 0,
+  vit_a_mcg_100g: 0, vit_d_mcg_100g: 0, vit_e_mg_100g: 0, vit_k_mcg_100g: 0, vit_c_mg_100g: 0,
+  vit_b1_mg_100g: 0, vit_b2_mg_100g: 0, vit_b3_mg_100g: 0, vit_b5_mg_100g: 0, vit_b6_mg_100g: 0,
+  vit_b9_mcg_100g: 0, vit_b12_mcg_100g: 0, water_g_100g: 0, alcohol_g_100g: 0
+};
+
+const foodForm = ref({ ...emptyFoodObj });
+
+const openAddModal = () => {
+  editingFoodId.value = null;
+  activeTab.value = 'macros';
+  foodForm.value = { ...emptyFoodObj };
+  showFoodFormModal.value = true;
+};
+
+const openEditModal = (food) => {
+  editingFoodId.value = food.id;
+  activeTab.value = 'macros';
+  foodForm.value = { ...emptyFoodObj, ...food };
+  showFoodFormModal.value = true;
+};
+
+const handleOffSearch = async () => {
+  if (!offQuery.value) return;
+  if (/^\d{8,14}$/.test(offQuery.value.trim())) {
+    const single = await foodsStore.fetchByBarcode(offQuery.value.trim());
+    foodsStore.offSearchResults = single ? [single] : [];
+  } else {
+    await foodsStore.searchOpenFoodFacts(offQuery.value);
+  }
+};
+
+const importOffItem = async (item) => {
+  await foodsStore.createFood(item);
+  showOffModal.value = false;
+};
+
+const submitFoodForm = async () => {
+  if (editingFoodId.value) {
+    await foodsStore.updateFood(editingFoodId.value, foodForm.value);
+  } else {
+    await foodsStore.createFood(foodForm.value);
+  }
+  showFoodFormModal.value = false;
+};
+
+onMounted(() => {
+  foodsStore.fetchFoods();
+});
+</script>
