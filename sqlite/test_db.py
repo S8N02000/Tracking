@@ -26,7 +26,7 @@ from pathlib import Path
 # ── Setup: chemins ────────────────────────────────────────────────────────────
 
 SCRIPT_DIR = Path(__file__).parent
-SCHEMA_PATH = SCRIPT_DIR / "schema.sql"
+SCHEMA_PATH = SCRIPT_DIR / "../server/src/database/schema.sql"
 DB_PATH = SCRIPT_DIR / "nutrition_test.db"
 
 # Imports des modules du projet

@@ -2,7 +2,7 @@
 """
 init_db.py
 ==========
-Crée la base SQLite, applique le schema.sql complet,
+Crée la base SQLite, applique le schema.sql complet depuis le dossier server,
 et peuple les tables de référence (lookup tables).
 
 Usage:
@@ -16,7 +16,7 @@ from pathlib import Path
 
 BASE = Path(__file__).parent
 DB_PATH = BASE / "nutrition.db"
-SCHEMA_PATH = BASE / "schema.sql"
+SCHEMA_PATH = BASE / "../server/src/database/schema.sql"
 
 
 def init_db(force: bool = False, db_path: Path = None) -> None:
@@ -30,7 +30,11 @@ def init_db(force: bool = False, db_path: Path = None) -> None:
             print("   Lance avec --force pour recréer from scratch.")
             return
 
-    # Lecture schema
+    # Lecture schema depuis server/src/database/schema.sql
+    if not SCHEMA_PATH.exists():
+        print(f"❌ Erreur: Fichier de schéma introuvable à {SCHEMA_PATH}")
+        sys.exit(1)
+
     schema_sql = SCHEMA_PATH.read_text()
 
     conn = sqlite3.connect(_db_path)
