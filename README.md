@@ -104,9 +104,10 @@ Vérifier ou créer le fichier `server/.env` :
 
 ```env
 PORT=3001
+NODE_ENV=development
+DB_PATH=../sqlite/nutrition.db
 ADMIN_SECRET=secret_admin_token_123456
 CORS_ORIGIN=http://localhost:5173
-DATABASE_PATH=./src/database/nutrition.db
 ```
 
 ### 4. Lancer l'Application en Mode Développement
