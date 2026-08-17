@@ -26,22 +26,44 @@
       <!-- Meals List (2 cols) -->
       <div class="lg:col-span-2 space-y-6">
         <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-bold text-white flex items-center gap-2">
               <UtensilsCrossed class="w-5 h-5 text-cyan-400" />
               Repas Enregistrés
             </h3>
 
-            <button
-              v-if="authStore.isAuthenticated"
-              @click="showAddMealModal = true"
-              class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-cyan-500 text-slate-950 hover:bg-cyan-400 shadow-md shadow-cyan-500/20"
-            >
-              <Plus class="w-4 h-4" />
-              <span>Ajouter un repas</span>
-            </button>
+            <div class="flex items-center gap-2">
+              <!-- View mode tabs -->
+              <div class="flex rounded-xl bg-slate-900 p-0.5 border border-slate-800">
+                <button
+                  @click="mealViewMode = 'list'"
+                  class="px-3 py-1 rounded-lg text-xs font-medium transition"
+                  :class="mealViewMode === 'list' ? 'bg-cyan-500 text-slate-950 font-semibold' : 'text-slate-400 hover:text-white'"
+                >
+                  Liste
+                </button>
+                <button
+                  @click="mealViewMode = 'matrix'"
+                  class="px-3 py-1 rounded-lg text-xs font-medium transition flex items-center gap-1"
+                  :class="mealViewMode === 'matrix' ? 'bg-cyan-500 text-slate-950 font-semibold' : 'text-slate-400 hover:text-white'"
+                >
+                  <Table2 class="w-3.5 h-3.5" />
+                  Matrice
+                </button>
+              </div>
+
+              <button
+                v-if="authStore.isAuthenticated"
+                @click="showAddMealModal = true"
+                class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-cyan-500 text-slate-950 hover:bg-cyan-400 shadow-md shadow-cyan-500/20"
+              >
+                <Plus class="w-4 h-4" />
+                <span>Ajouter un repas</span>
+              </button>
+            </div>
           </div>
 
+          <div v-if="mealViewMode === 'list'">
           <div v-if="logsStore.meals.length === 0" class="py-12 text-center text-slate-500 text-sm">
             Aucun repas enregistré pour le {{ logsStore.selectedDate }}.
           </div>
@@ -79,6 +101,10 @@
               </div>
             </div>
           </div>
+          </div>
+
+          <!-- Matrix view -->
+          <JournalMatrix v-else />
         </div>
       </div>
 
@@ -233,7 +259,8 @@ import { useLogsStore } from '@/stores/logsStore.js';
 import { useFoodsStore } from '@/stores/foodsStore.js';
 import { useRecipesStore } from '@/stores/recipesStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
-import { Calendar, UtensilsCrossed, Activity, Plus, Trash2 } from 'lucide-vue-next';
+import { Calendar, UtensilsCrossed, Activity, Plus, Trash2, Table2 } from 'lucide-vue-next';
+import JournalMatrix from '@/views/JournalMatrix.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -245,6 +272,7 @@ const authStore = useAuthStore();
 const showAddMealModal = ref(false);
 const showAddSportModal = ref(false);
 const itemType = ref('food');
+const mealViewMode = ref('list');
 
 const newMeal = ref({
   period: 'dejeuner',

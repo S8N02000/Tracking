@@ -118,56 +118,569 @@
         <table class="w-full text-left text-xs font-mono whitespace-nowrap">
           <thead class="bg-slate-900/95 text-slate-300 border-b border-slate-800 uppercase tracking-wider sticky top-0 z-20">
             <tr>
-              <th class="py-3.5 px-4 sticky left-0 bg-slate-900 z-30 shadow-md">Date</th>
-              <th class="py-3.5 px-3 text-cyan-400">Apport Kcal</th>
-              <th class="py-3.5 px-3 text-slate-400">BMR</th>
-              <th class="py-3.5 px-3 text-emerald-400">Sport Kcal</th>
-              <th class="py-3.5 px-3 text-amber-400">Dépense Totale</th>
-              <th class="py-3.5 px-3 font-semibold">Bilan Net</th>
-              <th class="py-3.5 px-3 text-indigo-400">Poids (kg)</th>
+              <th class="py-3.5 px-4 sticky left-0 bg-slate-900 z-30 shadow-md">
+                <span class="flex items-center gap-1">
+                  Date
+                  <button
+                    class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition"
+                    @click.stop="toggleTooltip('date')"
+                  >i</button>
+                </span>
+                <div
+                  v-if="activeTooltip === 'date'"
+                  class="absolute top-full left-0 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none"
+                >
+                  <div class="font-bold text-cyan-400 mb-0.5">Date</div>
+                  Jour de l'enregistrement. Clique pour ouvrir le journal.
+                  <div class="absolute top-0 left-4 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                </div>
+              </th>
+              <th class="relative py-3.5 px-3 text-cyan-400">
+                <span class="flex items-center gap-1">
+                  Apport Kcal
+                  <button
+                    class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition"
+                    @click.stop="toggleTooltip('kcal_in')"
+                  >i</button>
+                </span>
+                <div
+                  v-if="activeTooltip === 'kcal_in'"
+                  class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none"
+                >
+                  <div class="font-bold text-cyan-400 mb-0.5">Apport Kcal</div>
+                  Total kcal ingérées sur la journée.
+                  <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                </div>
+              </th>
+              <th class="relative py-3.5 px-3 text-slate-400">
+                <span class="flex items-center gap-1">
+                  BMR
+                  <button
+                    class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition"
+                    @click.stop="toggleTooltip('bmr')"
+                  >i</button>
+                </span>
+                <div
+                  v-if="activeTooltip === 'bmr'"
+                  class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none"
+                >
+                  <div class="font-bold text-cyan-400 mb-0.5">BMR</div>
+                  Métabolisme de base — calories brûlées au repos.
+                  <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                </div>
+              </th>
+              <th class="relative py-3.5 px-3 text-emerald-400">
+                <span class="flex items-center gap-1">
+                  Sport Kcal
+                  <button
+                    class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition"
+                    @click.stop="toggleTooltip('kcal_sport')"
+                  >i</button>
+                </span>
+                <div
+                  v-if="activeTooltip === 'kcal_sport'"
+                  class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none"
+                >
+                  <div class="font-bold text-cyan-400 mb-0.5">Sport Kcal</div>
+                  Calories brûlées pendant l'exercice.
+                  <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                </div>
+              </th>
+              <th class="relative py-3.5 px-3 text-amber-400">
+                <span class="flex items-center gap-1">
+                  Dépense
+                  <button
+                    class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition"
+                    @click.stop="toggleTooltip('kcal_out')"
+                  >i</button>
+                </span>
+                <div
+                  v-if="activeTooltip === 'kcal_out'"
+                  class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none"
+                >
+                  <div class="font-bold text-cyan-400 mb-0.5">Dépense Totale</div>
+                  BMR + sport combinés.
+                  <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                </div>
+              </th>
+              <th class="relative py-3.5 px-3 font-semibold">
+                <span class="flex items-center gap-1">
+                  Bilan
+                  <button
+                    class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition"
+                    @click.stop="toggleTooltip('bilan')"
+                  >i</button>
+                </span>
+                <div
+                  v-if="activeTooltip === 'bilan'"
+                  class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none"
+                >
+                  <div class="font-bold text-cyan-400 mb-0.5">Bilan Net</div>
+                  Apport − Dépense. Vert = déficit (perte), Rouge = excédent.
+                  <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                </div>
+              </th>
+              <th class="relative py-3.5 px-3 text-indigo-400">
+                <span class="flex items-center gap-1">
+                  Poids
+                  <button
+                    class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition"
+                    @click.stop="toggleTooltip('poids')"
+                  >i</button>
+                </span>
+                <div
+                  v-if="activeTooltip === 'poids'"
+                  class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none"
+                >
+                  <div class="font-bold text-cyan-400 mb-0.5">Poids (kg)</div>
+                  Poids Boditrax du jour. (rep.) = reporté si non pesé.
+                  <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                </div>
+              </th>
 
               <!-- Core Macros -->
-              <th class="py-3.5 px-3 text-rose-400">Protéines (g)</th>
-              <th class="py-3.5 px-3 text-amber-300">Glucides (g)</th>
-              <th class="py-3.5 px-3 text-amber-500">Sucres (g)</th>
-              <th class="py-3.5 px-3 text-emerald-300">Fibres (g)</th>
-              <th class="py-3.5 px-3 text-yellow-400">Lipides (g)</th>
-              <th class="py-3.5 px-3 text-yellow-600">Sat. (g)</th>
-              <th class="py-3.5 px-3 text-slate-400">Sel (g)</th>
+              <th class="relative py-3.5 px-3 text-rose-400">
+                <span class="flex items-center gap-1">
+                  Protéines
+                  <button
+                    class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition"
+                    @click.stop="toggleTooltip('P')"
+                  >i</button>
+                </span>
+                <div
+                  v-if="activeTooltip === 'P'"
+                  class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none"
+                >
+                  <div class="font-bold text-cyan-400 mb-0.5">Protéines</div>
+                  Construction musculaire. Cible ~150g/jour.
+                  <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                </div>
+              </th>
+              <th class="relative py-3.5 px-3 text-amber-300">
+                <span class="flex items-center gap-1">
+                  Glucides
+                  <button
+                    class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition"
+                    @click.stop="toggleTooltip('G')"
+                  >i</button>
+                </span>
+                <div
+                  v-if="activeTooltip === 'G'"
+                  class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none"
+                >
+                  <div class="font-bold text-cyan-400 mb-0.5">Glucides</div>
+                  Énergie principale. Sucre + amidon + fibres.
+                  <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                </div>
+              </th>
+              <th class="relative py-3.5 px-3 text-amber-500">
+                <span class="flex items-center gap-1">
+                  Sucres
+                  <button
+                    class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition"
+                    @click.stop="toggleTooltip('sucres')"
+                  >i</button>
+                </span>
+                <div
+                  v-if="activeTooltip === 'sucres'"
+                  class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none"
+                >
+                  <div class="font-bold text-cyan-400 mb-0.5">Sucres</div>
+                  Glucides simples. Viser &lt; 50g/jour.
+                  <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                </div>
+              </th>
+              <th class="relative py-3.5 px-3 text-emerald-300">
+                <span class="flex items-center gap-1">
+                  Fibres
+                  <button
+                    class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition"
+                    @click.stop="toggleTooltip('fibres')"
+                  >i</button>
+                </span>
+                <div
+                  v-if="activeTooltip === 'fibres'"
+                  class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none"
+                >
+                  <div class="font-bold text-cyan-400 mb-0.5">Fibres</div>
+                  Digestion, satiété. Cible ~30g/jour.
+                  <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                </div>
+              </th>
+              <th class="relative py-3.5 px-3 text-yellow-400">
+                <span class="flex items-center gap-1">
+                  Lipides
+                  <button
+                    class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition"
+                    @click.stop="toggleTooltip('L')"
+                  >i</button>
+                </span>
+                <div
+                  v-if="activeTooltip === 'L'"
+                  class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none"
+                >
+                  <div class="font-bold text-cyan-400 mb-0.5">Lipides</div>
+                  Graisses totales. 1g = 9kcal. Vise ~70g/jour.
+                  <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                </div>
+              </th>
+              <th class="relative py-3.5 px-3 text-yellow-600">
+                <span class="flex items-center gap-1">
+                  Sat.
+                  <button
+                    class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition"
+                    @click.stop="toggleTooltip('AGS')"
+                  >i</button>
+                </span>
+                <div
+                  v-if="activeTooltip === 'AGS'"
+                  class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none"
+                >
+                  <div class="font-bold text-cyan-400 mb-0.5">Acides Gras Saturés</div>
+                  Graisses solides. Viser &lt; 22g/jour.
+                  <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                </div>
+              </th>
+              <th class="relative py-3.5 px-3 text-slate-400">
+                <span class="flex items-center gap-1">
+                  Sel
+                  <button
+                    class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition"
+                    @click.stop="toggleTooltip('sel')"
+                  >i</button>
+                </span>
+                <div
+                  v-if="activeTooltip === 'sel'"
+                  class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none"
+                >
+                  <div class="font-bold text-cyan-400 mb-0.5">Sel</div>
+                  Sodium. Viser &lt; 6g/jour.
+                  <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                </div>
+              </th>
 
               <!-- Extended 35-Nutrient Columns (v1.2 Full View Mode) -->
               <template v-if="fullViewMode">
-                <th class="py-3.5 px-3 text-yellow-500">Mono-Insat (g)</th>
-                <th class="py-3.5 px-3 text-yellow-500">Poly-Insat (g)</th>
-                <th class="py-3.5 px-3 text-emerald-400">Oméga-3 (g)</th>
-                <th class="py-3.5 px-3 text-emerald-400">Oméga-6 (g)</th>
-                <th class="py-3.5 px-3 text-rose-500">Trans (g)</th>
-                <th class="py-3.5 px-3 text-amber-600">Cholestérol (mg)</th>
-                <th class="py-3.5 px-3 text-slate-300">Sodium (mg)</th>
-                <th class="py-3.5 px-3 text-cyan-300">Calcium (mg)</th>
-                <th class="py-3.5 px-3 text-rose-300">Fer (mg)</th>
-                <th class="py-3.5 px-3 text-emerald-300">Magnésium (mg)</th>
-                <th class="py-3.5 px-3 text-purple-300">Phosphore (mg)</th>
-                <th class="py-3.5 px-3 text-indigo-300">Potassium (mg)</th>
-                <th class="py-3.5 px-3 text-teal-300">Zinc (mg)</th>
-                <th class="py-3.5 px-3 text-amber-400">Cuivre (mg)</th>
-                <th class="py-3.5 px-3 text-amber-400">Manganèse (mg)</th>
-                <th class="py-3.5 px-3 text-emerald-400">Sélénium (µg)</th>
-                <th class="py-3.5 px-3 text-cyan-400">Iode (µg)</th>
-                <th class="py-3.5 px-3 text-amber-300">Vit A (µg)</th>
-                <th class="py-3.5 px-3 text-amber-300">Vit D (µg)</th>
-                <th class="py-3.5 px-3 text-amber-300">Vit E (mg)</th>
-                <th class="py-3.5 px-3 text-amber-300">Vit K (µg)</th>
-                <th class="py-3.5 px-3 text-amber-300">Vit C (mg)</th>
-                <th class="py-3.5 px-3 text-amber-300">Vit B1 (mg)</th>
-                <th class="py-3.5 px-3 text-amber-300">Vit B2 (mg)</th>
-                <th class="py-3.5 px-3 text-amber-300">Vit B3 (mg)</th>
-                <th class="py-3.5 px-3 text-amber-300">Vit B5 (mg)</th>
-                <th class="py-3.5 px-3 text-amber-300">Vit B6 (mg)</th>
-                <th class="py-3.5 px-3 text-amber-300">Vit B9 (µg)</th>
-                <th class="py-3.5 px-3 text-amber-300">Vit B12 (µg)</th>
-                <th class="py-3.5 px-3 text-cyan-300">Eau (g)</th>
-                <th class="py-3.5 px-3 text-rose-400">Alcool (g)</th>
+                <th class="relative py-3.5 px-3 text-yellow-500">
+                  <span class="flex items-center gap-1">
+                    Mono-Insat
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('mono')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'mono'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Mono-Insaturés</div>Gras insaturés protect. Huile olive, avocat.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-yellow-500">
+                  <span class="flex items-center gap-1">
+                    Poly-Insat
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('poly')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'poly'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Poly-Insaturés</div>Inclut ω3 et ω6. Noix, poissons.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-emerald-400">
+                  <span class="flex items-center gap-1">
+                    ω3
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('omega3')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'omega3'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Oméga-3</div>Anti-inflammatoire, cerveau. Poisson, noix.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-emerald-400">
+                  <span class="flex items-center gap-1">
+                    ω6
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('omega6')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'omega6'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Oméga-6</div>Équilibre inflammatoire. Tournesol, noix.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-rose-500">
+                  <span class="flex items-center gap-1">
+                    Trans
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('trans')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'trans'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Graisses Trans</div>Industrielles — à éviter. &lt; 2g/jour.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-600">
+                  <span class="flex items-center gap-1">
+                    Chol.
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('chol')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'chol'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Cholestérol</div>À limiter. VNR 300mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-slate-300">
+                  <span class="flex items-center gap-1">
+                    Sodium
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('sodium')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'sodium'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Sodium</div>Sel sous forme minérale. VNR &lt; 2000mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-cyan-300">
+                  <span class="flex items-center gap-1">
+                    Ca
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('Ca')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'Ca'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Calcium</div>Os, dents. VNR 1000mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-rose-300">
+                  <span class="flex items-center gap-1">
+                    Fe
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('Fe')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'Fe'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Fer</div>Transport oxygène. VNR 11mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-emerald-300">
+                  <span class="flex items-center gap-1">
+                    Mg
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('Mg')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'Mg'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Magnésium</div>Muscles, nerves. VNR 400mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-purple-300">
+                  <span class="flex items-center gap-1">
+                    P
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('Pmin')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'Pmin'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Phosphore</div>Os, énergie. VNR 700mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-indigo-300">
+                  <span class="flex items-center gap-1">
+                    K
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('K')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'K'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Potassium</div>Équilibre hydrique. VNR 4700mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-teal-300">
+                  <span class="flex items-center gap-1">
+                    Zn
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('Zn')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'Zn'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Zinc</div>Immunité. VNR 11mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-300">
+                  <span class="flex items-center gap-1">
+                    Cuivre
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('cuivre')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'cuivre'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Cuivre</div>Absorption fer. VNR 1mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-300">
+                  <span class="flex items-center gap-1">
+                    Mn
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('manganese')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'manganese'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Manganèse</div>Métabolisme. VNR 2mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-emerald-300">
+                  <span class="flex items-center gap-1">
+                    Se
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('selenium')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'selenium'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Sélénium</div>Thyroïde. VNR 55µg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-cyan-300">
+                  <span class="flex items-center gap-1">
+                    Iode
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('iode')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'iode'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Iode</div>Thyroïde. VNR 150µg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-200">
+                  <span class="flex items-center gap-1">
+                    Vit A
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('vitA')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'vitA'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Vitamine A</div>Vue, peau. VNR 800µg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-200">
+                  <span class="flex items-center gap-1">
+                    Vit D
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('vitD')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'vitD'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Vitamine D</div>Os, calcium. VNR 15µg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-200">
+                  <span class="flex items-center gap-1">
+                    Vit E
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('vitE')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'vitE'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Vitamine E</div>Anti-oxydant. VNR 12mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-200">
+                  <span class="flex items-center gap-1">
+                    Vit K
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('vitK')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'vitK'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Vitamine K</div>Coagulation. VNR 75µg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-200">
+                  <span class="flex items-center gap-1">
+                    Vit C
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('vitC')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'vitC'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Vitamine C</div>Immunité. VNR 80mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-200">
+                  <span class="flex items-center gap-1">
+                    B1
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('B1')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'B1'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Vit. B1</div>Énergie. VNR 1.1mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-200">
+                  <span class="flex items-center gap-1">
+                    B2
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('B2')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'B2'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Vit. B2</div>Globules rouges. VNR 1.4mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-200">
+                  <span class="flex items-center gap-1">
+                    B3
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('B3')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'B3'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Vit. B3</div>Énergie, peau. VNR 16mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-200">
+                  <span class="flex items-center gap-1">
+                    B5
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('B5')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'B5'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Vit. B5</div>Stress. VNR 6mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-200">
+                  <span class="flex items-center gap-1">
+                    B6
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('B6')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'B6'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Vit. B6</div>Acides aminés. VNR 1.4mg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-200">
+                  <span class="flex items-center gap-1">
+                    B9
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('B9')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'B9'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Vit. B9</div>Division cellulaire. VNR 330µg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-amber-200">
+                  <span class="flex items-center gap-1">
+                    B12
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('B12')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'B12'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Vit. B12</div>Système nerveux. VNR 2.5µg.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-cyan-300">
+                  <span class="flex items-center gap-1">
+                    Eau
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('eau')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'eau'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Eau</div>Hydratation. Cible ~2L/jour.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-rose-300">
+                  <span class="flex items-center gap-1">
+                    Alcool
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('alcool')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'alcool'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Alcool</div>À limiter. 7kcal/g, vide nutritionnel.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
+                <th class="relative py-3.5 px-3 text-orange-400">
+                  <span class="flex items-center gap-1">
+                    Caféine
+                    <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('cafeine')">i</button>
+                  </span>
+                  <div v-if="activeTooltip === 'cafeine'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
+                    <div class="font-bold text-cyan-400 mb-0.5">Caféine</div>Stimulant. VNR 400mg. Yangæ 106mg/500mL.
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
+                  </div>
+                </th>
               </template>
             </tr>
           </thead>
@@ -246,6 +759,7 @@
                 <td class="py-3 px-3 text-amber-200">{{ row.micros.vit_b12_mcg }}</td>
                 <td class="py-3 px-3 text-cyan-300">{{ row.micros.water_g }}</td>
                 <td class="py-3 px-3 text-rose-300">{{ row.micros.alcohol_g }}</td>
+                <td class="py-3 px-3 text-orange-400 font-semibold">{{ row.micros.caffeine_mg }}</td>
               </template>
             </tr>
           </tbody>
@@ -256,14 +770,30 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useDashboardStore } from '@/stores/dashboardStore.js';
 import { LayoutDashboard, Zap, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-vue-next';
 
 const store = useDashboardStore();
 const fullViewMode = ref(false);
+const activeTooltip = ref(null);
+
+function toggleTooltip(col) {
+  activeTooltip.value = activeTooltip.value === col ? null : col;
+}
+
+function handleClickOutside(e) {
+  if (activeTooltip.value && !e.target.closest('th')) {
+    activeTooltip.value = null;
+  }
+}
 
 onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
   store.fetchDashboard();
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
 });
 </script>
