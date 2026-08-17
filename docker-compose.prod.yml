@@ -1,0 +1,82 @@
+# ============================================================
+# docker-compose.prod.yml
+# NutriTrack — Production
+# ============================================================
+# Usage:
+#   cp .env.prod.example .env.prod   # créer le fichier de config
+#   nano .env.prod                   # remplir ADMIN_SECRET, CORS_ORIGIN
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+#
+# Vérifier:
+#   curl http://localhost:3001/api/health
+#   curl http://localhost:3001/        # frontend SPA
+#
+# Reconstruire après modification du Dockerfile:
+#   docker compose -f docker-compose.prod.yml build --no-cache
+# ============================================================
+
+services:
+
+  nutrition:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nutrition-app
+    restart: unless-stopped
+
+    # Variables d'environnement lues depuis .env.prod (via --env-file)
+    env_file:
+      - .env.prod
+
+    ports:
+      - "3001:3001"
+
+    volumes:
+      # Base SQLite WAL — données critiques (rw)
+      - ./sqlite:/app/sqlite:rw
+      # Scripts Python MCP agent
+      - ./scripts:/app/scripts:ro
+      # Catalogue CSV foods
+      - ./foods:/app/foods:ro
+      # Recipes CSV
+      - ./recipes:/app/recipes:ro
+      # Logs repas
+      - ./log:/app/log:rw
+      # Stock
+      - ./stock:/app/stock:rw
+      # Sport
+      - ./sport:/app/sport:rw
+      # Targets
+      - ./targets.yaml:/app/targets.yaml:ro
+
+    # Sécurité: tmpfs pour /tmp
+    user: "${UID:-1000}:${GID:-1000}"
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+
+    # Limites resources
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    labels:
+      - "app=nutrition-tracker"
+      - "app.version=prod"
