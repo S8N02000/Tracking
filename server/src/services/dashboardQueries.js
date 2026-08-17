@@ -42,7 +42,8 @@ export function getDailyMealsAggregation(startDate, endDate, customDb = null) {
       SUM(CASE WHEN ml.food_id IS NOT NULL THEN COALESCE(f.vit_b5_mg_100g, 0) * ml.quantity_g / 100.0 ELSE 0 END) AS vit_b5_mg,
       SUM(CASE WHEN ml.food_id IS NOT NULL THEN COALESCE(f.vit_b6_mg_100g, 0) * ml.quantity_g / 100.0 ELSE 0 END) AS vit_b6_mg,
       SUM(CASE WHEN ml.food_id IS NOT NULL THEN COALESCE(f.vit_b9_mcg_100g, 0) * ml.quantity_g / 100.0 ELSE 0 END) AS vit_b9_mcg,
-      SUM(CASE WHEN ml.food_id IS NOT NULL THEN COALESCE(f.vit_b12_mcg_100g, 0) * ml.quantity_g / 100.0 ELSE COALESCE(r.vit_b12_mcg_per_portion, 0) * ml.quantity_g / (r.total_weight_g / r.portions) END) AS vit_b12_mcg
+      SUM(CASE WHEN ml.food_id IS NOT NULL THEN COALESCE(f.vit_b12_mcg_100g, 0) * ml.quantity_g / 100.0 ELSE COALESCE(r.vit_b12_mcg_per_portion, 0) * ml.quantity_g / (r.total_weight_g / r.portions) END) AS vit_b12_mcg,
+      SUM(CASE WHEN ml.food_id IS NOT NULL THEN COALESCE(f.caffeine_mg_100g, 0) * ml.quantity_g / 100.0 ELSE COALESCE(r.caffeine_mg_per_portion, 0) * ml.quantity_g / (r.total_weight_g / r.portions) END) AS caffeine_mg
     FROM meal_log ml
     LEFT JOIN foods f ON f.id = ml.food_id
     LEFT JOIN recipes r ON r.id = ml.recipe_id

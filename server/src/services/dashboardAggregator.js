@@ -154,7 +154,8 @@ export function getDailyDashboard(startDateStr, endDateStr, customDb = null) {
         vit_b9_mcg: Math.round(meal?.vit_b9_mcg || 0),
         vit_b12_mcg: Math.round((meal?.vit_b12_mcg || 0) * 100) / 100,
         water_g: Math.round((meal?.water_g || 0) * 10) / 10,
-        alcohol_g: Math.round((meal?.alcohol_g || 0) * 10) / 10
+        alcohol_g: Math.round((meal?.alcohol_g || 0) * 10) / 10,
+        caffeine_mg: Math.round(meal?.caffeine_mg || 0)
       },
 
       // Biometrics scan if present
