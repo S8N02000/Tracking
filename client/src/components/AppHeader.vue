@@ -99,6 +99,14 @@
               <span>Admin</span>
             </span>
             <button
+              @click="reloadDb"
+              :disabled="isReloading"
+              class="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Forcer la mise à jour des données (同步DB)"
+            >
+              <RefreshCw class="w-4 h-4" :class="isReloading && 'animate-spin'" />
+            </button>
+            <button
               @click="authStore.logout()"
               class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition"
               title="Déconnexion"
@@ -213,6 +221,9 @@
           </button>
           <div v-else class="flex items-center space-x-2">
             <span class="text-xs font-mono text-emerald-400 font-semibold">Connecté</span>
+            <button @click="reloadDb" :disabled="isReloading" class="px-2 py-1 rounded-lg text-slate-400 hover:text-cyan-400 bg-slate-800 border border-slate-700 text-xs font-mono disabled:opacity-50" title="Forcer la mise à jour DB">
+              <RefreshCw class="w-3.5 h-3.5 inline" :class="isReloading && 'animate-spin'" />
+            </button>
             <button @click="authStore.logout()" class="text-xs text-rose-400 underline">Déconnexion</button>
           </div>
         </div>
@@ -267,7 +278,7 @@ import { ref } from 'vue';
 import { useAuthStore } from '@/stores/authStore.js';
 import {
   LayoutDashboard, LineChart, Stethoscope, Calendar, UtensilsCrossed,
-  BookOpen, Activity, Lock, Unlock, Menu, X
+  BookOpen, Activity, Lock, Unlock, Menu, X, RefreshCw
 } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
@@ -275,6 +286,7 @@ const showAuthModal = ref(false);
 const mobileMenuOpen = ref(false);
 const inputSecret = ref('');
 const loginError = ref('');
+const isReloading = ref(false);
 
 const handleLogin = async () => {
   loginError.value = '';
@@ -284,6 +296,23 @@ const handleLogin = async () => {
     inputSecret.value = '';
   } else {
     loginError.value = 'Secret administrateur invalide.';
+  }
+};
+
+const reloadDb = async () => {
+  isReloading.value = true;
+  try {
+    const res = await fetch('/api/admin/reload-db', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_secret')}` }
+    });
+    if (!res.ok) throw new Error('Server error');
+    // Refresh current page data
+    window.location.reload();
+  } catch (err) {
+    alert('Erreur lors du rechargement de la DB : ' + err.message);
+  } finally {
+    isReloading.value = false;
   }
 };
 </script>

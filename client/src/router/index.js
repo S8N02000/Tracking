@@ -22,6 +22,11 @@ const router = createRouter({
     {
       path: '/logs',
       name: 'logs',
+      component: () => import('@/views/JournalMatrix.vue')
+    },
+    {
+      path: '/logs-classic',
+      name: 'logs-classic',
       component: () => import('@/views/JournalView.vue')
     },
     {
