@@ -3,10 +3,14 @@ import helmet from 'helmet';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { authMiddleware } from './middlewares/auth.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { runMigrations } from './database/migrate.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import healthRoutes from './routes/health.js';
 import authRoutes from './routes/auth.js';
@@ -19,6 +23,7 @@ import dashboardRoutes from './routes/dashboard.js';
 import analyticsRoutes from './routes/analytics.js';
 import boditraxRoutes from './routes/boditrax.js';
 import openfoodfactsRoutes from './routes/openfoodfacts.js';
+import adminRoutes from './routes/admin.js';
 
 dotenv.config();
 
@@ -58,9 +63,11 @@ app.use('/api', dashboardRoutes);
 app.use('/api', analyticsRoutes);
 app.use('/api', boditraxRoutes);
 app.use('/api', openfoodfactsRoutes);
+app.use('/api', adminRoutes);
 
 // Serve static client build
-const clientDistPath = path.resolve(process.cwd(), '../client/dist');
+const clientDistPath = process.env.CLIENT_DIST_PATH
+  || path.resolve(__dirname, '../client/dist');
 app.use(express.static(clientDistPath));
 
 // SPA Fallback: serve index.html for all non-API GET routes (e.g. /logs?date=2026-08-09)
