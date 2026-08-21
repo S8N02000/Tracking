@@ -108,13 +108,20 @@
           </div>
         </div>
 
-        <div v-if="authStore.isAuthenticated" class="flex justify-end space-x-3 pt-2 border-t border-slate-800/60">
-          <button @click="openEditModal(food)" class="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-semibold">
-            <Edit class="w-3.5 h-3.5" /> Éditer (35 Nutriments)
+        <div class="flex items-center justify-between pt-2 border-t border-slate-800/60">
+          <!-- Accessible à tous : bouton détails nutriments -->
+          <button @click="openNutrientModal(food)" class="text-xs text-slate-400 hover:text-cyan-400 flex items-center gap-1 transition">
+            <Info class="w-3.5 h-3.5" /> Tous les nutriments
           </button>
-          <button @click="foodsStore.deleteFood(food.id)" class="text-xs text-rose-400 hover:underline flex items-center gap-1">
-            <Trash2 class="w-3.5 h-3.5" /> Supprimer
-          </button>
+
+          <div v-if="authStore.isAuthenticated" class="flex space-x-3">
+            <button @click="openEditModal(food)" class="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-semibold">
+              <Edit class="w-3.5 h-3.5" /> Éditer
+            </button>
+            <button @click="foodsStore.deleteFood(food.id)" class="text-xs text-rose-400 hover:underline flex items-center gap-1">
+              <Trash2 class="w-3.5 h-3.5" /> Supprimer
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -369,6 +376,102 @@
         </form>
       </div>
     </div>
+
+    <!-- MODAL DÉTAIL NUTRIMENTS — accessible à tous -->
+    <div v-if="showNutrientModal && selectedNutrientFood" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="glass-panel max-w-2xl w-full rounded-2xl p-6 border border-slate-800 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-white">{{ selectedNutrientFood.name }}</h3>
+          <button @click="showNutrientModal = false" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+        </div>
+
+        <!-- Mini summary bar -->
+        <div class="grid grid-cols-4 gap-2 text-center font-mono text-xs p-3 bg-slate-900/80 rounded-xl">
+          <div><span class="block text-[10px] text-slate-500 uppercase">Kcal</span><span class="font-bold text-cyan-300">{{ selectedNutrientFood.energy_kcal_100g || 0 }}</span></div>
+          <div><span class="block text-[10px] text-slate-500 uppercase">Prot.</span><span class="font-bold text-rose-300">{{ selectedNutrientFood.proteins_g_100g || 0 }}g</span></div>
+          <div><span class="block text-[10px] text-slate-500 uppercase">Gluc.</span><span class="font-bold text-amber-300">{{ selectedNutrientFood.carbohydrates_g_100g || 0 }}g</span></div>
+          <div><span class="block text-[10px] text-slate-500 uppercase">Lip.</span><span class="font-bold text-yellow-300">{{ selectedNutrientFood.fat_g_100g || 0 }}g</span></div>
+        </div>
+
+        <!-- Lipides détaillés -->
+        <div v-if="selectedNutrientFood.saturated_fat_g_100g || selectedNutrientFood.omega3_g_100g || selectedNutrientFood.omega6_g_100g || selectedNutrientFood.omega9_g_100g || selectedNutrientFood.trans_fat_g_100g">
+          <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Lipides</h4>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs font-mono">
+            <div v-if="selectedNutrientFood.saturated_fat_g_100g"><span class="text-slate-400">Sat.</span> <span class="text-white">{{ selectedNutrientFood.saturated_fat_g_100g }}g</span></div>
+            <div v-if="selectedNutrientFood.omega3_g_100g"><span class="text-slate-400">Oméga-3</span> <span class="text-green-400">{{ selectedNutrientFood.omega3_g_100g }}g</span></div>
+            <div v-if="selectedNutrientFood.omega6_g_100g"><span class="text-slate-400">Oméga-6</span> <span class="text-yellow-400">{{ selectedNutrientFood.omega6_g_100g }}g</span></div>
+            <div v-if="selectedNutrientFood.omega9_g_100g"><span class="text-slate-400">Oméga-9</span> <span class="text-blue-400">{{ selectedNutrientFood.omega9_g_100g }}g</span></div>
+            <div v-if="selectedNutrientFood.trans_fat_g_100g"><span class="text-slate-400">Trans</span> <span class="text-orange-400">{{ selectedNutrientFood.trans_fat_g_100g }}g</span></div>
+            <div v-if="selectedNutrientFood.cholesterol_mg_100g"><span class="text-slate-400">Chol.</span> <span class="text-white">{{ selectedNutrientFood.cholesterol_mg_100g }}mg</span></div>
+          </div>
+        </div>
+
+        <!-- Glucides détaillés -->
+        <div v-if="selectedNutrientFood.sugars_g_100g || selectedNutrientFood.fiber_g_100g || selectedNutrientFood.starch_g_100g">
+          <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Glucides</h4>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs font-mono">
+            <div v-if="selectedNutrientFood.carbohydrates_g_100g"><span class="text-slate-400">Totaux</span> <span class="text-white">{{ selectedNutrientFood.carbohydrates_g_100g }}g</span></div>
+            <div v-if="selectedNutrientFood.sugars_g_100g"><span class="text-slate-400">Sucres</span> <span class="text-amber-400">{{ selectedNutrientFood.sugars_g_100g }}g</span></div>
+            <div v-if="selectedNutrientFood.fiber_g_100g"><span class="text-slate-400">Fibres</span> <span class="text-green-400">{{ selectedNutrientFood.fiber_g_100g }}g</span></div>
+            <div v-if="selectedNutrientFood.starch_g_100g"><span class="text-slate-400">Amidon</span> <span class="text-white">{{ selectedNutrientFood.starch_g_100g }}g</span></div>
+          </div>
+        </div>
+
+        <!-- Minéraux -->
+        <div v-if="selectedNutrientFood.calcium_mg_100g || selectedNutrientFood.iron_mg_100g || selectedNutrientFood.magnesium_mg_100g || selectedNutrientFood.phosphorus_mg_100g || selectedNutrientFood.potassium_mg_100g || selectedNutrientFood.zinc_mg_100g || selectedNutrientFood.manganese_mg_100g || selectedNutrientFood.copper_mg_100g || selectedNutrientFood.selenium_mg_100g || selectedNutrientFood.iodine_mg_100g">
+          <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Minéraux & Oligo-éléments</h4>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs font-mono">
+            <div v-if="selectedNutrientFood.calcium_mg_100g"><span class="text-slate-400">Calcium</span> <span class="text-white">{{ selectedNutrientFood.calcium_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.iron_mg_100g"><span class="text-slate-400">Fer</span> <span class="text-red-400">{{ selectedNutrientFood.iron_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.magnesium_mg_100g"><span class="text-slate-400">Magnésium</span> <span class="text-purple-400">{{ selectedNutrientFood.magnesium_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.phosphorus_mg_100g"><span class="text-slate-400">Phosphore</span> <span class="text-white">{{ selectedNutrientFood.phosphorus_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.potassium_mg_100g"><span class="text-slate-400">Potassium</span> <span class="text-pink-400">{{ selectedNutrientFood.potassium_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.zinc_mg_100g"><span class="text-slate-400">Zinc</span> <span class="text-white">{{ selectedNutrientFood.zinc_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.manganese_mg_100g"><span class="text-slate-400">Manganèse</span> <span class="text-slate-300">{{ selectedNutrientFood.manganese_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.copper_mg_100g"><span class="text-slate-400">Cuivre</span> <span class="text-orange-300">{{ selectedNutrientFood.copper_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.selenium_mg_100g"><span class="text-slate-400">Sélénium</span> <span class="text-yellow-300">{{ (selectedNutrientFood.selenium_mg_100g * 1000).toFixed(0) }}µg</span></div>
+            <div v-if="selectedNutrientFood.iodine_mg_100g"><span class="text-slate-400">Iode</span> <span class="text-cyan-300">{{ (selectedNutrientFood.iodine_mg_100g * 1000).toFixed(0) }}µg</span></div>
+          </div>
+        </div>
+
+        <!-- Vitamines -->
+        <div v-if="selectedNutrientFood.vit_a_mcg_100g || selectedNutrientFood.vit_d_mcg_100g || selectedNutrientFood.vit_e_mg_100g || selectedNutrientFood.vit_k_mcg_100g || selectedNutrientFood.vit_c_mg_100g || selectedNutrientFood.vit_b1_mg_100g || selectedNutrientFood.vit_b2_mg_100g || selectedNutrientFood.vit_b3_mg_100g || selectedNutrientFood.vit_b5_mg_100g || selectedNutrientFood.vit_b6_mg_100g || selectedNutrientFood.vit_b9_mcg_100g || selectedNutrientFood.vit_b12_mcg_100g">
+          <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Vitamines</h4>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs font-mono">
+            <div v-if="selectedNutrientFood.vit_a_mcg_100g"><span class="text-slate-400">Vit A</span> <span class="text-orange-300">{{ selectedNutrientFood.vit_a_mcg_100g }}µg</span></div>
+            <div v-if="selectedNutrientFood.vit_d_mcg_100g"><span class="text-slate-400">Vit D</span> <span class="text-yellow-300">{{ selectedNutrientFood.vit_d_mcg_100g }}µg</span></div>
+            <div v-if="selectedNutrientFood.vit_e_mg_100g"><span class="text-slate-400">Vit E</span> <span class="text-green-400">{{ selectedNutrientFood.vit_e_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.vit_k_mcg_100g"><span class="text-slate-400">Vit K</span> <span class="text-pink-400">{{ selectedNutrientFood.vit_k_mcg_100g }}µg</span></div>
+            <div v-if="selectedNutrientFood.vit_c_mg_100g"><span class="text-slate-400">Vit C</span> <span class="text-red-300">{{ selectedNutrientFood.vit_c_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.vit_b1_mg_100g"><span class="text-slate-400">Vit B1</span> <span class="text-white">{{ selectedNutrientFood.vit_b1_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.vit_b2_mg_100g"><span class="text-slate-400">Vit B2</span> <span class="text-white">{{ selectedNutrientFood.vit_b2_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.vit_b3_mg_100g"><span class="text-slate-400">Vit B3</span> <span class="text-white">{{ selectedNutrientFood.vit_b3_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.vit_b5_mg_100g"><span class="text-slate-400">Vit B5</span> <span class="text-white">{{ selectedNutrientFood.vit_b5_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.vit_b6_mg_100g"><span class="text-slate-400">Vit B6</span> <span class="text-white">{{ selectedNutrientFood.vit_b6_mg_100g }}mg</span></div>
+            <div v-if="selectedNutrientFood.vit_b9_mcg_100g"><span class="text-slate-400">Vit B9</span> <span class="text-purple-300">{{ selectedNutrientFood.vit_b9_mcg_100g }}µg</span></div>
+            <div v-if="selectedNutrientFood.vit_b12_mcg_100g"><span class="text-slate-400">Vit B12</span> <span class="text-red-400">{{ selectedNutrientFood.vit_b12_mcg_100g }}µg</span></div>
+          </div>
+        </div>
+
+        <!-- Sel & Sodium -->
+        <div v-if="selectedNutrientFood.salt_g_100g || selectedNutrientFood.sodium_mg_100g">
+          <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Sel & Sodium</h4>
+          <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+            <div v-if="selectedNutrientFood.salt_g_100g"><span class="text-slate-400">Sel</span> <span class="text-red-400">{{ selectedNutrientFood.salt_g_100g }}g</span></div>
+            <div v-if="selectedNutrientFood.sodium_mg_100g"><span class="text-slate-400">Sodium</span> <span class="text-white">{{ selectedNutrientFood.sodium_mg_100g }}mg</span></div>
+          </div>
+        </div>
+
+        <!-- Notes source -->
+        <div v-if="selectedNutrientFood.notes" class="text-xs text-slate-500 italic pt-2 border-t border-slate-800">
+          Source: {{ selectedNutrientFood.notes }}
+        </div>
+
+        <div class="flex justify-end pt-2">
+          <button @click="showNutrientModal = false" class="px-4 py-2 rounded-xl text-sm text-slate-400 hover:text-white">Fermer</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -376,13 +479,15 @@
 import { ref, onMounted } from 'vue';
 import { useFoodsStore } from '@/stores/foodsStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
-import { UtensilsCrossed, Plus, Search, Barcode, Trash2, Edit } from 'lucide-vue-next';
+import { UtensilsCrossed, Plus, Search, Barcode, Trash2, Edit, Info } from 'lucide-vue-next';
 
 const foodsStore = useFoodsStore();
 const authStore = useAuthStore();
 
 const showOffModal = ref(false);
 const showFoodFormModal = ref(false);
+const showNutrientModal = ref(false);
+const selectedNutrientFood = ref(null);
 const editingFoodId = ref(null);
 const activeTab = ref('macros');
 const offQuery = ref('');
@@ -408,6 +513,11 @@ const openAddModal = () => {
   activeTab.value = 'macros';
   foodForm.value = { ...emptyFoodObj };
   showFoodFormModal.value = true;
+};
+
+const openNutrientModal = (food) => {
+  selectedNutrientFood.value = food;
+  showNutrientModal.value = true;
 };
 
 const openEditModal = (food) => {
