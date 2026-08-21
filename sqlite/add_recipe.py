@@ -145,23 +145,49 @@ def slug_to_db_name(slug: str) -> str:
 
 
 def find_food_by_slug(conn: sqlite3.Connection, slug: str) -> Optional[sqlite3.Row]:
-    """Trouve un aliment par slug → name dans la DB. Recherche insensible à la casse."""
+    """Trouve un aliment par slug → name dans la DB. Recherche insensible à la casse.
+
+    Logique de matching (dans l'ordre) :
+      1. Nom exact en base (slugWith_underscores)        ← gère les noms en base avec underscore
+      2. Slug avec espaces (slugWith_underscores → spaces)
+      3. LIKE %slugAs-is%  (insensible à la casse)
+      4. LIKE %slugWithSpaces% (underscore → espace)
+    """
     saved_factory = conn.row_factory
     conn.row_factory = sqlite3.Row
     try:
-        # Approche: remplace _ par espaces, cherche en LIKE insensible à la casse
-        name_pattern = slug.replace("_", " ")
+        # 1. Cherche tel quel (crée les noms avec underscore en base)
         cur = conn.execute(
             "SELECT * FROM foods WHERE LOWER(name) = LOWER(?) AND is_active = 1",
-            (name_pattern,)
+            (slug,)
         )
         row = cur.fetchone()
         if row:
             return row
-        # Fallback: LIKE %
+
+        # 2. Remplace _ par espace (slugWith_underscores → name with spaces)
+        name_with_spaces = slug.replace("_", " ")
+        cur = conn.execute(
+            "SELECT * FROM foods WHERE LOWER(name) = LOWER(?) AND is_active = 1",
+            (name_with_spaces,)
+        )
+        row = cur.fetchone()
+        if row:
+            return row
+
+        # 3. LIKE %slugAs-is%
         cur = conn.execute(
             "SELECT * FROM foods WHERE LOWER(name) LIKE '%' || LOWER(?) || '%' AND is_active = 1 LIMIT 1",
-            (name_pattern,)
+            (slug,)
+        )
+        row = cur.fetchone()
+        if row:
+            return row
+
+        # 4. LIKE %slugWithSpaces%
+        cur = conn.execute(
+            "SELECT * FROM foods WHERE LOWER(name) LIKE '%' || LOWER(?) || '%' AND is_active = 1 LIMIT 1",
+            (name_with_spaces,)
         )
         return cur.fetchone()
     finally:
