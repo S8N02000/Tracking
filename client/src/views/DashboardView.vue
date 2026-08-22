@@ -114,7 +114,7 @@
 
     <!-- High-Density Matrix Table -->
     <div v-else class="glass-panel rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto" style="max-height: 75vh; overflow-y: auto;">
         <table class="w-full text-left text-xs font-mono whitespace-nowrap">
           <thead class="bg-slate-900/95 text-slate-300 border-b border-slate-800 uppercase tracking-wider sticky top-0 z-20">
             <tr>
@@ -763,6 +763,80 @@
               </template>
             </tr>
           </tbody>
+          <!-- Totaux: TOTAL et / JOUR -->
+          <tfoot>
+            <!-- Ligne 1 : TOTAL -->
+            <tr class="border-t-2 border-slate-600 bg-slate-900/95 font-bold">
+              <td class="py-2.5 px-4 text-white sticky left-0 bg-slate-900 z-20 text-xs">TOTAL ({{ store.rows.length }}j)</td>
+              <td class="py-2.5 px-3 text-cyan-400 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.kcal_in||0),0)).toFixed(2) }}</td>
+              <td class="py-2.5 px-3 text-slate-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.bmr_kcal||0),0)).toFixed(2) }}</td>
+              <td class="py-2.5 px-3 text-emerald-400 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.kcal_sport||0),0)).toFixed(2) }}</td>
+              <td class="py-2.5 px-3 text-amber-400 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.total_kcal_expended||0),0)).toFixed(2) }}</td>
+              <td class="py-2.5 px-3 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.net_balance||0),0)).toFixed(2) }}</td>
+              <td class="py-2.5 px-3 text-slate-400 text-xs">—</td>
+              <td class="py-2.5 px-3 text-rose-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.proteins_g||0),0)).toFixed(2) }}</td>
+              <td class="py-2.5 px-3 text-amber-200 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.carbs_g||0),0)).toFixed(2) }}</td>
+              <td class="py-2.5 px-3 text-amber-400 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.sugars_g||0),0)).toFixed(2) }}</td>
+              <td class="py-2.5 px-3 text-emerald-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.fiber_g||0),0)).toFixed(2) }}</td>
+              <td class="py-2.5 px-3 text-yellow-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.fat_g||0),0)).toFixed(2) }}</td>
+              <td class="py-2.5 px-3 text-yellow-500 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.saturated_fat_g||0),0)).toFixed(2) }}</td>
+              <td class="py-2.5 px-3 text-slate-400 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.salt_g||0),0)).toFixed(2) }}</td>
+              <template v-if="fullViewMode">
+                <td class="py-2.5 px-3 text-yellow-400 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.monounsaturated_fat_g||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-yellow-400 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.polyunsaturated_fat_g||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-emerald-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.omega_3_g||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-emerald-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.omega_6_g||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-rose-400 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.trans_fat_g||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-500 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.cholesterol_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-slate-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.sodium_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-cyan-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.calcium_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-rose-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.iron_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-emerald-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.magnesium_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-purple-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.phosphorus_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-indigo-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.potassium_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-teal-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.zinc_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.copper_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.manganese_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-emerald-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.selenium_mcg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-cyan-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.iodine_mcg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-200 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.vit_a_mcg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-200 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.vit_d_mcg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-200 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.vit_e_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-200 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.vit_k_mcg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-200 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.vit_c_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-200 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.vit_b1_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-200 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.vit_b2_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-200 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.vit_b3_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-200 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.vit_b5_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-200 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.vit_b6_mg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-200 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.vit_b9_mcg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-amber-200 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.vit_b12_mcg||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-cyan-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.water_g||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-rose-300 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.alcohol_g||0),0)).toFixed(2) }}</td>
+                <td class="py-2.5 px-3 text-orange-400 text-xs">{{ (store.rows.reduce((a,r)=>a+(r.micros.caffeine_mg||0),0)).toFixed(2) }}</td>
+              </template>
+            </tr>
+            <!-- Ligne 2 : / JOUR -->
+            <tr class="border-t border-slate-600 bg-amber-950/30 font-bold">
+              <td class="py-2 px-4 text-amber-300 sticky left-0 bg-slate-900/95 z-20 text-xs">/ JOUR ({{ store.rows.length }}j)</td>
+              <td class="py-2 px-3 text-cyan-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.kcal_in||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+              <td class="py-2 px-3 text-slate-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.bmr_kcal||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+              <td class="py-2 px-3 text-emerald-400 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.kcal_sport||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+              <td class="py-2 px-3 text-amber-400 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.total_kcal_expended||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+              <td class="py-2 px-3 text-cyan-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.net_balance||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+              <td class="py-2 px-3 text-slate-400 text-xs">—</td>
+              <td class="py-2 px-3 text-rose-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.proteins_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+              <td class="py-2 px-3 text-amber-200 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.carbs_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+              <td class="py-2 px-3 text-amber-400 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.sugars_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+              <td class="py-2 px-3 text-emerald-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.fiber_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+              <td class="py-2 px-3 text-yellow-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.fat_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+              <td class="py-2 px-3 text-yellow-500 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.saturated_fat_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+              <td class="py-2 px-3 text-slate-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.salt_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+              <template v-if="fullViewMode">
+                <td v-for="n in 35" :key="n" class="py-2 px-3 text-slate-600 text-xs">—</td>
+              </template>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
