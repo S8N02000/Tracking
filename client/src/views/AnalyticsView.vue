@@ -123,6 +123,72 @@
       </div>
     </div>
 
+    <!-- Body Composition Card -->
+    <div class="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800">
+      <!-- Header -->
+      <div class="flex items-center gap-3 mb-4">
+        <Scale class="w-5 h-5 text-rose-400 shrink-0" />
+        <h3 class="text-sm sm:text-base font-bold text-white">Composition Corporelle</h3>
+        <span class="text-xs text-slate-500 font-mono ml-auto shrink-0">{{ latestScanDate }}</span>
+      </div>
+
+      <div class="flex flex-col gap-4">
+        <!-- Top: fat % + badge -->
+        <div class="flex items-end gap-4">
+          <div>
+            <div class="text-3xl font-bold text-rose-400">{{ fatPercent }}<span class="text-lg">%</span></div>
+            <div class="text-xs text-slate-400">Masse Grasse</div>
+          </div>
+          <span
+            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold self-start mt-1"
+            :class="fatCategoryClass"
+          >
+            {{ fatCategoryLabel }}
+          </span>
+        </div>
+
+        <!-- Scale bar (full width) -->
+        <div class="w-full flex flex-col gap-1">
+          <div class="relative h-3 rounded-full bg-slate-800 overflow-hidden flex">
+            <div class="h-full bg-blue-500/50" style="width:13%" />
+            <div class="h-full bg-emerald-400/50" style="width:19%" />
+            <div class="h-full bg-yellow-400/50" style="width:17%" />
+            <div class="h-full bg-orange-400/50" style="width:21%" />
+            <div class="h-full bg-rose-500/50" style="width:30%" />
+            <!-- Marker: white triangle pointing down -->
+            <div
+              v-if="fatPercent !== '—'"
+              class="absolute top-0 w-0 h-0"
+              :style="`left:${fatScalePosition};transform:translateX(-50%)`"
+              style="border-left:4px solid transparent;border-right:4px solid transparent;border-top:6px solid white"
+            />
+          </div>
+          <div class="flex justify-between text-[9px] text-slate-600 font-mono leading-tight">
+            <span>2%</span><span>13%</span><span>17%</span><span>24%</span><span>25%+</span>
+          </div>
+          <div class="flex justify-between text-[9px] text-slate-500 font-mono leading-tight">
+            <span>Min</span><span>Athl.</span><span>Forme</span><span>Moyen</span><span>Obèse</span>
+          </div>
+        </div>
+
+        <!-- Stats: 3 columns on mobile -->
+        <div class="grid grid-cols-3 gap-2 text-xs font-mono">
+          <div class="flex flex-col items-center gap-0.5 p-2 rounded-xl bg-slate-800/50">
+            <div class="text-indigo-400 font-bold">{{ latestScanWeight }} <span class="text-slate-500 text-[10px]">kg</span></div>
+            <div class="text-slate-500 text-[10px]">Poids</div>
+          </div>
+          <div class="flex flex-col items-center gap-0.5 p-2 rounded-xl bg-slate-800/50">
+            <div class="text-emerald-400 font-bold">{{ latestScanMuscle }} <span class="text-slate-500 text-[10px]">kg</span></div>
+            <div class="text-slate-500 text-[10px]">Muscle</div>
+          </div>
+          <div class="flex flex-col items-center gap-0.5 p-2 rounded-xl bg-slate-800/50">
+            <div class="text-rose-400 font-bold">{{ latestScanFat }} <span class="text-slate-500 text-[10px]">kg</span></div>
+            <div class="text-slate-500 text-[10px]">Gras</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Charts Grid: Correlation & Radar -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- 1. Correlation: Weight vs Cumulative Caloric Balance -->
@@ -162,9 +228,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import api from '@/api/client.js';
-import { LineChart, Sparkles } from 'lucide-vue-next';
+import { LineChart, Sparkles, Scale } from 'lucide-vue-next';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -179,6 +245,10 @@ import {
   Filler
 } from 'chart.js';
 import { Line, Radar, Doughnut } from 'vue-chartjs';
+import { useBoditraxStore } from '@/stores/boditraxStore.js';
+import { useAuthStore } from '@/stores/authStore.js';
+const boditraxStore = useBoditraxStore();
+const authStore = useAuthStore();
 
 ChartJS.register(
   CategoryScale,
@@ -204,6 +274,52 @@ const correlationData = ref(null);
 const radarData = ref(null);
 const mealData = ref(null);
 const mealTotalKcal = ref(0);
+
+// Latest Boditrax scan computed
+const latestScan = computed(() => {
+  return boditraxStore.scans.length > 0 ? boditraxStore.scans[0] : null;
+});
+
+const latestScanDate = computed(() => {
+  return latestScan.value ? latestScan.value.scan_datetime.substring(0, 10) : '—';
+});
+const latestScanWeight = computed(() => latestScan.value?.weight_kg ?? '—');
+const latestScanMuscle = computed(() => latestScan.value?.muscle_mass_kg ?? '—');
+const latestScanFat = computed(() => latestScan.value?.fat_mass_kg ?? '—');
+
+const fatPercent = computed(() => {
+  if (!latestScan.value) return '—';
+  return ((latestScan.value.fat_mass_kg / latestScan.value.weight_kg) * 100).toFixed(1);
+});
+
+const fatCategoryLabel = computed(() => {
+  const p = parseFloat(fatPercent.value);
+  if (isNaN(p)) return '—';
+  if (p < 5) return 'Minimum vital';
+  if (p < 13) return 'Athlétique';
+  if (p < 17) return 'En forme';
+  if (p < 25) return 'Moyen';
+  return 'Obèse';
+});
+
+const fatCategoryClass = computed(() => {
+  const p = parseFloat(fatPercent.value);
+  if (isNaN(p)) return '';
+  if (p < 5) return 'bg-blue-500/20 text-blue-300 border border-blue-500/30';
+  if (p < 13) return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+  if (p < 17) return 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/30';
+  if (p < 25) return 'bg-orange-400/20 text-orange-300 border border-orange-400/30';
+  return 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
+});
+
+// Position of marker on the scale bar (0–100%)
+// Scale spans 2% to 35%+ (33 percentage points), map fat% to 0–100%
+const fatScalePosition = computed(() => {
+  const p = parseFloat(fatPercent.value);
+  if (isNaN(p)) return '0%';
+  const clamped = Math.max(2, Math.min(35, p));
+  return `${((clamped - 2) / 33) * 100}%`;
+});
 
 const customMetricLabels = {
   muscle_mass_kg: 'Masse Musculaire (kg)',
@@ -461,5 +577,6 @@ const changeRange = (days) => {
 
 onMounted(() => {
   loadAnalytics();
+  boditraxStore.fetchScans();
 });
 </script>
