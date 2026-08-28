@@ -234,3 +234,12 @@ CREATE INDEX IF NOT EXISTS idx_foods_name      ON foods(name);
 CREATE INDEX IF NOT EXISTS idx_foods_active    ON foods(is_active);
 CREATE INDEX IF NOT EXISTS idx_body_scans_date ON body_scans(scan_date);
 CREATE INDEX IF NOT EXISTS idx_body_scans_dt   ON body_scans(scan_datetime);
+
+-- 9. EXPORTS METADATA (pour suivi delta Boditrax entre exports)
+CREATE TABLE IF NOT EXISTS exports_metadata (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    export_type     TEXT    NOT NULL,
+    last_boditrax_id INTEGER,
+    last_export_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(export_type)
+);

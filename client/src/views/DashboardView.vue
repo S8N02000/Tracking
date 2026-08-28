@@ -833,7 +833,38 @@
               <td class="py-2 px-3 text-yellow-500 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.saturated_fat_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
               <td class="py-2 px-3 text-slate-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.salt_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
               <template v-if="fullViewMode">
-                <td v-for="n in 35" :key="n" class="py-2 px-3 text-slate-600 text-xs">—</td>
+                <td class="py-2 px-3 text-yellow-400 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.monounsaturated_fat_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-yellow-400 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.polyunsaturated_fat_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-emerald-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.omega_3_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-emerald-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.omega_6_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-rose-400 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.trans_fat_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-500 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.cholesterol_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-slate-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.sodium_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-cyan-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.calcium_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-rose-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.iron_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-emerald-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.magnesium_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-purple-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.phosphorus_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-indigo-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.potassium_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-teal-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.zinc_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.copper_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.manganese_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-emerald-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.selenium_mcg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-cyan-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.iodine_mcg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-200 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.vit_a_mcg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-200 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.vit_d_mcg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-200 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.vit_e_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-200 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.vit_k_mcg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-200 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.vit_c_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-200 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.vit_b1_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-200 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.vit_b2_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-200 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.vit_b3_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-200 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.vit_b5_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-200 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.vit_b6_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-200 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.vit_b9_mcg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-amber-200 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.vit_b12_mcg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-cyan-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.water_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-rose-300 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.alcohol_g||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
+                <td class="py-2 px-3 text-orange-400 text-xs">{{ store.rows.length ? (store.rows.reduce((a,r)=>a+(r.micros.caffeine_mg||0),0)/store.rows.length).toFixed(2) : '—' }}</td>
               </template>
             </tr>
           </tfoot>

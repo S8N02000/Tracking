@@ -853,6 +853,18 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
     ORDER BY date_ ASC, logged_at ASC
   `).all(startDateStr, endDateStr);
 
+  // ── Boditrax delta : seulement les scans nouveaux depuis le dernier export
+  const lastMeta = db.prepare(
+    'SELECT last_boditrax_id FROM exports_metadata WHERE export_type = ?'
+  ).get('diagnostics');
+  const lastBoditraxId = lastMeta?.last_boditrax_id ?? 0;
+
+  const boditraxEntries = db.prepare(`
+    SELECT * FROM body_scans
+    WHERE id > ? AND scan_date BETWEEN ? AND ?
+    ORDER BY scan_date ASC
+  `).all(lastBoditraxId, startDateStr, endDateStr);
+
   const dailyLogsMap = new Map();
   for (const row of dashboard.rows) {
     dailyLogsMap.set(row.date, {
@@ -864,6 +876,7 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
         collation: []
       },
       sports: [],
+      boditrax: [],
       totals: {
         kcal: row.kcal_in,
         target_kcal: row.targets.kcal,
@@ -956,8 +969,44 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
       id: s.id,
       sport_type: s.sport_type,
       duration_min: s.duration_min,
-      kcal_burned: s.kcal_burned || 0
+      kcal_burned: s.kcal_burned || 0,
+      avg_hr_bpm: s.avg_hr_bpm || null,
+      distance_km: s.distance_km || null,
+      elevation_m: s.elevation_m || null,
+      notes: s.notes || null
     });
+  }
+
+  // ── Boditrax : un seul scan par jour (le plus récent), enrichi
+  for (const scan of boditraxEntries) {
+    const dayLog = dailyLogsMap.get(scan.scan_date);
+    if (!dayLog) continue;
+    // Calcul MG% depuis kg si disponible
+    const fatPct = (scan.weight_kg && scan.fat_mass_kg)
+      ? Math.round((scan.fat_mass_kg / scan.weight_kg) * 1000) / 10
+      : null;
+    dayLog.boditrax.push({
+      id: scan.id,
+      scan_date: scan.scan_date,
+      weight_kg: scan.weight_kg ? Math.round(scan.weight_kg * 10) / 10 : null,
+      fat_mass_kg: scan.fat_mass_kg ? Math.round(scan.fat_mass_kg * 10) / 10 : null,
+      fat_pct: fatPct,
+      muscle_mass_kg: scan.muscle_mass_kg ? Math.round(scan.muscle_mass_kg * 10) / 10 : null,
+      water_mass_kg: scan.water_mass_kg ? Math.round(scan.water_mass_kg * 10) / 10 : null,
+      visceral_fat_rating: scan.visceral_fat_rating || null,
+      bmr_kcal: scan.bmr_kcal || null,
+      metabolic_age: scan.metabolic_age || null
+    });
+  }
+
+  // ── Mettre à jour exports_metadata pour le prochain delta
+  if (boditraxEntries.length > 0) {
+    const maxScanId = Math.max(...boditraxEntries.map(s => s.id));
+    db.prepare(`
+      INSERT INTO exports_metadata (export_type, last_boditrax_id, last_export_at)
+      VALUES (?, ?, datetime('now'))
+      ON CONFLICT(export_type) DO UPDATE SET last_boditrax_id = excluded.last_boditrax_id, last_export_at = excluded.last_export_at
+    `).run('diagnostics', maxScanId);
   }
 
   return {

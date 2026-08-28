@@ -721,9 +721,18 @@
             </div>
 
             <!-- Day totals summary -->
-            <div style="background-color: #f8fafc; border-top: 1px solid #cbd5e1; padding-top: 4px; font-size: 9px; font-family: monospace; display: flex; justify-content: space-between;">
+            <div style="background-color: #f8fafc; border-top: 1px solid #cbd5e1; padding-top: 4px; font-size: 9px; font-family: monospace; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
               <span><strong>Totaux :</strong> {{ dayLog.totals.kcal }} kcal | P: {{ dayLog.totals.proteins_g }}g | G: {{ dayLog.totals.carbs_g }}g | L: {{ dayLog.totals.fat_g }}g | Fibres: {{ dayLog.totals.fiber_g }}g</span>
-              <span v-if="dayLog.sports.length > 0" style="color: #059669; font-weight: bold;">🏃 Sport: {{ dayLog.sports[0].sport_type }} ({{ dayLog.sports[0].duration_min }}m)</span>
+              <span v-if="dayLog.sports.length > 0" style="color: #059669; font-weight: bold;">🏃 {{ dayLog.sports.map(sp => sp.sport_type + ' ' + sp.duration_min + 'm').join(' + ') }}</span>
+            </div>
+
+            <!-- Boditrax weigh-in (if any new scan this day) -->
+            <div v-if="dayLog.boditrax && dayLog.boditrax.length > 0" style="margin-top: 6px; padding: 5px 8px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; font-size: 8px;">
+              <div v-for="scan in dayLog.boditrax" :key="scan.id" style="color: #166534;">
+                <strong>⚖️ Boditrax — {{ formatDate(scan.scan_date) }} :</strong>
+                Poids {{ scan.weight_kg }} kg | MG {{ scan.fat_pct }}% ({{ scan.fat_mass_kg }} kg) | Muscle {{ scan.muscle_mass_kg }} kg
+                | Eau {{ scan.water_mass_kg }} kg | Graisse visc. {{ scan.visceral_fat_rating }} | BMR {{ scan.bmr_kcal }} kcal
+              </div>
             </div>
           </div>
         </div>
@@ -1064,17 +1073,31 @@ const exportMarkdown = () => {
         md += `\n`;
       }
 
-      // Sport
-      md += `## 🏃 Sport\n`;
+      // Sport enrichi
+      md += `## 🏃 Activité Sportive\n`;
       if (!dayLog.sports || dayLog.sports.length === 0) {
-        md += `| Type | Durée | kcal brûlées |\n`;
-        md += `|---|---|---|\n`;
-        md += `| Aucun | — | — |\n\n`;
+        md += `*Aucune activité enregistrée*\n\n`;
       } else {
-        md += `| Type | Durée | kcal brûlées |\n`;
-        md += `|---|---|---|\n`;
+        md += `| Type | Durée | FC moy | Distance | Dénivelé | kcal |\n`;
+        md += `|---|---|---|---|---|---|\n`;
         for (const sp of dayLog.sports) {
-          md += `| ${sp.sport_type} | ${sp.duration_min} min | ${sp.kcal_burned} |\n`;
+          const fc = sp.avg_hr_bpm ? `${sp.avg_hr_bpm} bpm` : '—';
+          const dist = sp.distance_km ? `${sp.distance_km} km` : '—';
+          const deniv = sp.elevation_m ? `${sp.elevation_m} m` : '—';
+          md += `| ${sp.sport_type} | ${sp.duration_min} min | ${fc} | ${dist} | ${deniv} | ${sp.kcal_burned} |\n`;
+        }
+        md += `\n`;
+        // Notes si présentes
+        const notes = dayLog.sports.filter(sp => sp.notes).map(sp => `  - *${sp.notes}*`).join('\n');
+        if (notes) md += `${notes}\n\n`;
+      }
+
+      // Boditrax (nouveaux scans depuis le dernier export)
+      if (dayLog.boditrax && dayLog.boditrax.length > 0) {
+        md += `## ⚖️ Boditrax\n`;
+        for (const scan of dayLog.boditrax) {
+          md += `- **${formatDate(scan.scan_date)}** — Poids: ${scan.weight_kg} kg | MG: ${scan.fat_pct}% (${scan.fat_mass_kg} kg) | Muscle: ${scan.muscle_mass_kg} kg\n`;
+          md += `  Eau: ${scan.water_mass_kg} kg | Graisse visc.: ${scan.visceral_fat_rating} | BMR: ${scan.bmr_kcal} kcal\n`;
         }
         md += `\n`;
       }
