@@ -290,8 +290,13 @@ const newSport = ref({
 const calculateMealKcal = (meal) => {
   if (meal.food_id) {
     return Math.round((meal.quantity_g / 100) * (meal.energy_kcal_100g || 0));
-  } else if (meal.recipe_id && meal.recipe_total_weight > 0) {
-    const singlePortionWeight = meal.recipe_total_weight / meal.recipe_portions;
+  } else if (meal.recipe_id) {
+    // portions_count est autoritatif si défini (nouveau format). Sinon fallback legacy.
+    if (meal.portions_count != null) {
+      return Math.round(meal.portions_count * (meal.energy_kcal_per_portion || 0));
+    }
+    const singlePortionWeight = (meal.recipe_total_weight || 0) / (meal.recipe_portions || 1);
+    if (!singlePortionWeight) return 0;
     return Math.round((meal.quantity_g / singlePortionWeight) * (meal.energy_kcal_per_portion || 0));
   }
   return 0;
