@@ -107,7 +107,7 @@ export function getMealDistribution(startDateStr, endDateStr, customDb = null) {
       SUM(
         CASE
           WHEN ml.food_id IS NOT NULL THEN COALESCE(f.energy_kcal_100g, 0) * ml.quantity_g / 100.0
-          ELSE COALESCE(r.energy_kcal_per_portion, 0) * ml.quantity_g / (r.total_weight_g / r.portions)
+          ELSE COALESCE(r.energy_kcal_per_portion, 0) * COALESCE(ml.portions_count, ml.quantity_g / (r.total_weight_g / r.portions))
         END
       ) AS total_kcal
     FROM meal_log ml
@@ -939,13 +939,16 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
     } else if (m.recipe_id && m.recipe_name) {
       foodName = m.recipe_name;
       const weightPerPortion = (m.recipe_total_weight || 100) / (m.recipe_portions || 1);
-      const factor = m.quantity_g / weightPerPortion;
-      kcal = Math.round((m.energy_kcal_per_portion || 0) * factor);
-      prot = Math.round(((m.proteins_g_per_portion || 0) * factor) * 10) / 10;
-      carbs = Math.round(((m.carbohydrates_g_per_portion || 0) * factor) * 10) / 10;
-      fat = Math.round(((m.fat_g_per_portion || 0) * factor) * 10) / 10;
-      fiber = Math.round(((m.fiber_g_per_portion || 0) * factor) * 10) / 10;
-      qtyDisplay = `${Math.round(m.quantity_g)}g`;
+      // portions_count = new format (number of portions). If NULL, fallback legacy (quantity_g = grams).
+      const portions = m.portions_count != null ? m.portions_count : (m.quantity_g / weightPerPortion);
+      kcal = Math.round((m.energy_kcal_per_portion || 0) * portions);
+      prot = Math.round(((m.proteins_g_per_portion || 0) * portions) * 10) / 10;
+      carbs = Math.round(((m.carbohydrates_g_per_portion || 0) * portions) * 10) / 10;
+      fat = Math.round(((m.fat_g_per_portion || 0) * portions) * 10) / 10;
+      fiber = Math.round(((m.fiber_g_per_portion || 0) * portions) * 10) / 10;
+      qtyDisplay = m.portions_count != null
+        ? `${m.portions_count} portion${m.portions_count > 1 ? 's' : ''}`
+        : `${Math.round(m.quantity_g)}g`;
     }
 
     const periodKey = dayLog.meals[m.period] ? m.period : 'collation';

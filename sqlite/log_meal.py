@@ -68,6 +68,7 @@ def log_entry(
         food_dict  = row_to_dict(food_row)
         weight_per_unit = food_dict.get("weight_per_unit_g", 0.0)
         slug = food_dict.get("name", "").replace(" ", "_")
+        portions_count = None  # foods always use quantity_g (grams)
 
         quantity_g = unit_to_grams(
             quantity=original_qty,
@@ -85,14 +86,20 @@ def log_entry(
         food_id   = None
         recipe_id = recipe_dict["id"]
 
-        # Pour une portion de recette: unit=portion → quantity_g = qty * weight_per_portion
-        if original_unit.lower() in ("portion", "portion(s)"):
+        # Pour une recette: quantity_g = portion weight (legacy compat),
+        # portions_count = nombre de portions (nouveau format autoritatif).
+        # Détection: si unit="portion(s)" → nouveau format.
+        # Sinon (g, cs, ml...) → traiter comme legacy: quantity_g est le poids réel loggé.
+        if original_unit.lower() in ("portion", "portion(s)", "p", "parts"):
+            portions_count = float(original_qty)
             portions      = float(recipe_dict.get("portions", 1) or 1)
             total_weight = float(recipe_dict.get("total_weight_g", 0) or 1)
             weight_per_port = total_weight / portions
-            quantity_g = original_qty * weight_per_port
+            quantity_g = portions_count * weight_per_port
         else:
+            # Legacy: quantity_g est directement le poids loggé, portions_count NULL
             quantity_g = unit_to_grams(original_qty, original_unit)
+            portions_count = None
 
     if quantity_g <= 0:
         raise ValueError(f"Quantité final doit être > 0 (reuq={quantity_g})")
@@ -100,12 +107,13 @@ def log_entry(
     cursor = conn.execute(
         """
         INSERT INTO meal_log
-            (date_, period, food_id, recipe_id, quantity_g,
+            (date_, period, food_id, recipe_id, quantity_g, portions_count,
              original_unit, original_qty, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (date_norm, period_norm, food_id, recipe_id,
-         round(quantity_g, 1), original_unit, original_qty, notes or "")
+         round(quantity_g, 1), portions_count,
+         original_unit, original_qty, notes or "")
     )
     return cursor.lastrowid
 
