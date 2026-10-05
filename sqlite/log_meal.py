@@ -21,11 +21,46 @@ import json
 import sqlite3
 import sys
 import argparse
+import os
+import urllib.request
 from pathlib import Path
 from datetime import datetime
 
 BASE = Path(__file__).parent
 DB_PATH = BASE / "nutrition.db"
+
+
+def _load_env():
+    env_path = BASE.parent / ".env.prod"
+    if env_path.exists():
+        for line in env_path.read_text().splitlines():
+            line = line.strip()
+            if "=" in line and not line.startswith("#"):
+                k, v = line.split("=", 1)
+                os.environ.setdefault(k, v)
+
+
+def reload_db_api():
+    """Appel POST /api/admin/reload-db pour invalidate le cache better-sqlite3."""
+    _load_env()
+    secret = os.environ.get("ADMIN_SECRET")
+    if not secret:
+        print("[reload-db] ADMIN_SECRET non trouvé — skip")
+        return
+    try:
+        req = urllib.request.Request(
+            "https://nutrition.lombardandco.fr/api/admin/reload-db",
+            method="POST",
+            headers={"Authorization": f"Bearer {secret}"},
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            result = json.loads(resp.read())
+        if result.get("success"):
+            print("[reload-db] OK")
+        else:
+            print(f"[reload-db] Échec: {result}")
+    except Exception as e:
+        print(f"[reload-db] Erreur: {e}")
 
 # Importer utils pour conversion
 sys.path.insert(0, str(BASE))
@@ -198,6 +233,9 @@ def main():
     for success, msg in results:
         if not success:
             print(f"  ❌ {msg}")
+
+    if ok > 0:
+        reload_db_api()
 
     sys.exit(0 if ko == 0 else 1)
 
