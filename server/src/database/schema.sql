@@ -94,6 +94,7 @@ CREATE TABLE IF NOT EXISTS foods (
     vit_d_mcg_100g   REAL,
     vit_e_mg_100g    REAL,
     vit_k_mcg_100g   REAL,
+    caffeine_mg_100g     REAL,
     source    TEXT    NOT NULL DEFAULT 'ciqual',
     notes     TEXT,
     is_active INTEGER NOT NULL DEFAULT 1,
@@ -134,6 +135,7 @@ CREATE TABLE IF NOT EXISTS recipes (
     vit_b5_mg_per_portion       REAL,
     vit_b6_mg_per_portion       REAL,
     vit_b9_mcg_per_portion      REAL,
+    caffeine_mg_per_portion REAL,
     source    TEXT    NOT NULL DEFAULT 'user_input',
     is_active INTEGER NOT NULL DEFAULT 1,
     created_at TEXT   NOT NULL DEFAULT (date('now')),
@@ -163,6 +165,7 @@ CREATE TABLE IF NOT EXISTS meal_log (
     original_qty  REAL,
     logged_at   TEXT    NOT NULL DEFAULT (datetime('now')),
     notes       TEXT,
+    portions_count REAL,
     CHECK (
         (food_id IS NOT NULL AND recipe_id IS NULL) OR
         (food_id IS NULL     AND recipe_id IS NOT NULL)
@@ -242,4 +245,14 @@ CREATE TABLE IF NOT EXISTS exports_metadata (
     last_boditrax_id INTEGER,
     last_export_at  TEXT    NOT NULL DEFAULT (datetime('now')),
     UNIQUE(export_type)
+);
+
+CREATE TABLE IF NOT EXISTS stocks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    food_id INTEGER NOT NULL REFERENCES foods(id),
+    opened_at TEXT NOT NULL,
+    closed_at TEXT,
+    initial_quantity_g REAL NOT NULL,
+    notes TEXT,
+    UNIQUE(food_id, opened_at)
 );

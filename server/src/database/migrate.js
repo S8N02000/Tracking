@@ -15,16 +15,30 @@ export function runMigrations(customDbPath = null) {
   const schemaPath = path.join(__dirname, 'schema.sql');
   const sql = fs.readFileSync(schemaPath, 'utf8');
 
+  // Colonnes ajoutees apres la creation initiale de schema.sql (ALTER TABLE
+  // "bulletproof" : sans ca, toute base reconstruite explose sur une colonne
+  // manquante au lieu de demarrer). Idempotent.
+  const ADDED_COLUMNS = [
+    // table, colonne, DDL
+    ['recipes', 'rating',
+     'rating REAL CHECK (rating IS NULL OR (rating >= 0 AND rating <= 10))'],
+    ['meal_log', 'portions_count',
+     'portions_count REAL'],
+    ['foods', 'caffeine_mg_100g',
+     'caffeine_mg_100g REAL'],
+    ['recipes', 'caffeine_mg_per_portion',
+     'caffeine_mg_per_portion REAL']
+  ];
+
   // Execute non-destructive statements in transaction
   const executeMigration = db.transaction(() => {
     db.exec(sql);
 
-    // Check if rating column exists in recipes table
-    const tableInfo = db.prepare("PRAGMA table_info(recipes)").all();
-    const hasRating = tableInfo.some((col) => col.name === 'rating');
-
-    if (!hasRating) {
-      db.exec("ALTER TABLE recipes ADD COLUMN rating REAL CHECK (rating IS NULL OR (rating >= 0 AND rating <= 10))");
+    for (const [table, column, ddl] of ADDED_COLUMNS) {
+      const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+      if (!cols.some((c) => c.name === column)) {
+        db.exec(`ALTER TABLE ${table} ADD COLUMN ${ddl}`);
+      }
     }
   });
 
