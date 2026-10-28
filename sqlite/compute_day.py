@@ -126,12 +126,12 @@ def get_day_meals(conn: sqlite3.Connection, date_str: str) -> list[dict]:
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.omega3_g_100g, 0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.omega3_g_per_portion, 0) * ml.quantity_g / (r.total_weight_g / r.portions)
                 END AS omega3_g,
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.omega6_g_100g, 0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.omega6_g_per_portion, 0) * ml.quantity_g / (r.total_weight_g / r.portions)
                 END AS omega6_g,
                 -- Minéraux
                 CASE
@@ -173,7 +173,8 @@ def get_day_meals(conn: sqlite3.Connection, date_str: str) -> list[dict]:
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.sodium_mg_100g,0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.sodium_mg_per_portion,
+                        COALESCE(r.salt_g_per_portion,0) / 2.54 * 1000) * ml.quantity_g / (r.total_weight_g / r.portions)
                 END AS sodium_mg,
                 -- Vitamines
                 CASE
@@ -245,13 +246,48 @@ def get_day_meals(conn: sqlite3.Connection, date_str: str) -> list[dict]:
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.selenium_mg_100g,0) * ml.quantity_g / 100.0
-                    ELSE 0
+                    ELSE COALESCE(r.selenium_mcg_per_portion,0) * ml.quantity_g / (r.total_weight_g / r.portions)
                 END AS selenium_mcg,
                 CASE
                     WHEN ml.food_id IS NOT NULL THEN
                         COALESCE(f.omega9_g_100g,0) * ml.quantity_g / 100.0
-                    ELSE 0
-                END AS omega9_g
+                    ELSE COALESCE(r.monounsaturated_fat_g_per_portion,0) * ml.quantity_g / (r.total_weight_g / r.portions)
+                END AS omega9_g,
+                CASE
+                    WHEN ml.food_id IS NOT NULL THEN
+                        COALESCE(f.copper_mg_100g,0) * ml.quantity_g / 100.0
+                    ELSE COALESCE(r.copper_mg_per_portion,0) * ml.quantity_g / (r.total_weight_g / r.portions)
+                END AS copper_mg,
+                CASE
+                    WHEN ml.food_id IS NOT NULL THEN
+                        COALESCE(f.manganese_mg_100g,0) * ml.quantity_g / 100.0
+                    ELSE COALESCE(r.manganese_mg_per_portion,0) * ml.quantity_g / (r.total_weight_g / r.portions)
+                END AS manganese_mg,
+                CASE
+                    WHEN ml.food_id IS NOT NULL THEN
+                        COALESCE(f.iodine_mg_100g,0) * ml.quantity_g / 100.0
+                    ELSE COALESCE(r.iodine_mcg_per_portion,0) * ml.quantity_g / (r.total_weight_g / r.portions)
+                END AS iodine_mcg,
+                CASE
+                    WHEN ml.food_id IS NOT NULL THEN
+                        COALESCE(f.vit_k_mcg_100g,0) * ml.quantity_g / 100.0
+                    ELSE COALESCE(r.vit_k_mcg_per_portion,0) * ml.quantity_g / (r.total_weight_g / r.portions)
+                END AS vit_k_mcg,
+                CASE
+                    WHEN ml.food_id IS NOT NULL THEN
+                        COALESCE(f.cholesterol_mg_100g,0) * ml.quantity_g / 100.0
+                    ELSE COALESCE(r.cholesterol_mg_per_portion,0) * ml.quantity_g / (r.total_weight_g / r.portions)
+                END AS cholesterol_mg,
+                CASE
+                    WHEN ml.food_id IS NOT NULL THEN
+                        COALESCE(f.polyunsaturated_fat_g_100g,0) * ml.quantity_g / 100.0
+                    ELSE COALESCE(r.polyunsaturated_fat_g_per_portion,0) * ml.quantity_g / (r.total_weight_g / r.portions)
+                END AS polyunsaturated_fat_g,
+                CASE
+                    WHEN ml.food_id IS NOT NULL THEN
+                        COALESCE(f.trans_fat_g_100g,0) * ml.quantity_g / 100.0
+                    ELSE COALESCE(r.trans_fat_g_per_portion,0) * ml.quantity_g / (r.total_weight_g / r.portions)
+                END AS trans_fat_g
             FROM meal_log ml
             LEFT JOIN foods f ON ml.food_id = f.id
             LEFT JOIN recipes r ON ml.recipe_id = r.id
@@ -289,7 +325,9 @@ def compute_totals(meals: list[dict]) -> dict:
         "zinc_mg", "phosphorus_mg", "sodium_mg",
         "vit_a_mcg", "vit_b1_mg", "vit_b2_mg", "vit_b3_mg", "vit_b5_mg",
         "vit_b6_mg", "vit_b9_mcg", "vit_b12_mcg", "vit_c_mg", "vit_d_mcg",
-        "vit_e_mg", "selenium_mcg",
+        "vit_e_mg", "selenium_mcg", "iodine_mcg", "vit_k_mcg",
+        "copper_mg", "manganese_mg", "cholesterol_mg",
+        "polyunsaturated_fat_g", "trans_fat_g",
     )}
     for m in meals:
         for k, v in m.items():

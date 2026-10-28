@@ -11,6 +11,7 @@ de vérité) — ce script ne recalcule rien, il met en forme + ajoute le PRAL.
 """
 import argparse
 import json
+import os
 import sqlite3
 import sys
 import urllib.request
@@ -28,7 +29,29 @@ from compute_day import (  # noqa: E402
     get_sport,
 )
 
-ADMIN_SECRET = "ygmxjGjf9eki@f5woodxmwvwzkh56jrhqjakdi2x9m"
+
+def get_admin_secret() -> str:
+    """Secret admin lu de l'environnement — jamais codé en dur dans le dépôt.
+
+    Ordre : variable d'env NUTRITION_ADMIN_SECRET, puis fichier .env.prod du
+    projet (clé ADMIN_SECRET). Erreur explicite si absent.
+    """
+    secret = os.environ.get("NUTRITION_ADMIN_SECRET")
+    if secret:
+        return secret.strip()
+    env_file = Path("/data/nutrition/.env.prod")
+    if env_file.exists():
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line.startswith("ADMIN_SECRET="):
+                return line.split("=", 1)[1].strip().strip("'\"")
+    raise RuntimeError(
+        "Secret admin introuvable. Définir NUTRITION_ADMIN_SECRET "
+        "ou ADMIN_SECRET dans /data/nutrition/.env.prod"
+    )
+
+
+ADMIN_SECRET = get_admin_secret()
 API = "http://localhost:3001"
 OUT_DIR = Path("/data/nutrition/backup_reports")
 
@@ -51,6 +74,7 @@ VITAMINS = [
     ("B6", "vit_b6_mg", "mg"),
     ("B9 (folates)", "vit_b9_mcg", "µg"),
     ("B12", "vit_b12_mcg", "µg"),
+    ("K", "vit_k_mcg", "µg"),
 ]
 
 MINERALS = [
@@ -61,6 +85,9 @@ MINERALS = [
     ("Zinc", "zinc_mg", "mg"),
     ("Phosphore", "phosphorus_mg", "mg"),
     ("Sélénium", "selenium_mcg", "µg"),
+    ("Iode", "iodine_mcg", "µg"),
+    ("Cuivre", "copper_mg", "mg"),
+    ("Manganèse", "manganese_mg", "mg"),
 ]
 
 
@@ -100,6 +127,10 @@ def build(date_str: str, with_pral: bool = True) -> str:
     # Cibles absentes de compute_day.DEFAULT_TARGETS (VNR adultes, cf. skill)
     t.setdefault("vit_b5_mg", 6)
     t.setdefault("selenium_mcg", 55)
+    t.setdefault("vit_k_mcg", 70)
+    t.setdefault("iodine_mcg", 150)
+    t.setdefault("copper_mg", 1.0)
+    t.setdefault("manganese_mg", 1.4)
     totals = compute_totals(meals)
     raw_kcal = totals.get("kcal", 0.0)
     raw_sport = sum(s.get("kcal_burned") or 0 for s in sport)

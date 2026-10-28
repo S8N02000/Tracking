@@ -11,6 +11,7 @@ export const NUTRIENT_KEYS = [
   'omega3_g',
   'omega6_g',
   'omega9_g',
+  'polyunsaturated_fat_g',
   'salt_g',
   'sodium_mg',
   'cholesterol_mg',

@@ -36,6 +36,10 @@ VNR = {
     'zinc_mg': 10,
     'phosphorus_mg': 700,
     'selenium_mcg': 55,
+    'iodine_mcg': 150,
+    'vit_k_mcg': 70,
+    'copper_mg': 1.0,
+    'manganese_mg': 1.4,
 }
 
 FOOD_KEYS = [
@@ -45,6 +49,10 @@ FOOD_KEYS = [
     'vit_b1_mg', 'vit_b2_mg', 'vit_b3_mg', 'vit_b5_mg', 'vit_b6_mg', 'vit_b9_mcg',
     'calcium_mg', 'iron_mg', 'magnesium_mg', 'potassium_mg', 'zinc_mg',
     'phosphorus_mg', 'selenium_mcg',
+    'iodine_mcg', 'vit_k_mcg', 'copper_mg', 'manganese_mg',
+    'sodium_mg', 'cholesterol_mg',
+    'omega3_g', 'omega6_g',
+    'monounsaturated_fat_g', 'polyunsaturated_fat_g', 'trans_fat_g',
 ]
 
 PERIOD_ORDER = ['petit_dejeuner', 'dejeuner', 'diner', 'collation']
@@ -86,32 +94,43 @@ def get_meals_for_date(conn, date):
             ml.original_unit,
             ml.original_qty,
             ml.recipe_id,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.energy_kcal_per_portion ELSE COALESCE(f.energy_kcal_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.proteins_g_per_portion ELSE COALESCE(f.proteins_g_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.carbohydrates_g_per_portion ELSE COALESCE(f.carbohydrates_g_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.fat_g_per_portion ELSE COALESCE(f.fat_g_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.fiber_g_per_portion ELSE COALESCE(f.fiber_g_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.sugars_g_per_portion ELSE COALESCE(f.sugars_g_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.saturated_fat_g_per_portion ELSE COALESCE(f.saturated_fat_g_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.salt_g_per_portion ELSE COALESCE(f.salt_g_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_a_mcg_per_portion ELSE COALESCE(f.vit_a_mcg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_c_mg_per_portion ELSE COALESCE(f.vit_c_mg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_d_mcg_per_portion ELSE COALESCE(f.vit_d_mcg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_b12_mcg_per_portion ELSE COALESCE(f.vit_b12_mcg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_e_mg_per_portion ELSE COALESCE(f.vit_e_mg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_b1_mg_per_portion ELSE COALESCE(f.vit_b1_mg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_b2_mg_per_portion ELSE COALESCE(f.vit_b2_mg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_b3_mg_per_portion ELSE COALESCE(f.vit_b3_mg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_b5_mg_per_portion ELSE COALESCE(f.vit_b5_mg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_b6_mg_per_portion ELSE COALESCE(f.vit_b6_mg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_b9_mcg_per_portion ELSE COALESCE(f.vit_b9_mcg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.calcium_mg_per_portion ELSE COALESCE(f.calcium_mg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.iron_mg_per_portion ELSE COALESCE(f.iron_mg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.magnesium_mg_per_portion ELSE COALESCE(f.magnesium_mg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.potassium_mg_per_portion ELSE COALESCE(f.potassium_mg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.zinc_mg_per_portion ELSE COALESCE(f.zinc_mg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN r.phosphorus_mg_per_portion ELSE COALESCE(f.phosphorus_mg_100g,0) END,
-            CASE WHEN ml.recipe_id IS NOT NULL THEN 0 ELSE COALESCE(f.selenium_mg_100g,0) END
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.energy_kcal_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.energy_kcal_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.proteins_g_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.proteins_g_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.carbohydrates_g_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.carbohydrates_g_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.fat_g_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.fat_g_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.fiber_g_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.fiber_g_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.sugars_g_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.sugars_g_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.saturated_fat_g_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.saturated_fat_g_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.salt_g_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.salt_g_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_a_mcg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.vit_a_mcg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_c_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.vit_c_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_d_mcg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.vit_d_mcg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_b12_mcg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.vit_b12_mcg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_e_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.vit_e_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_b1_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.vit_b1_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_b2_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.vit_b2_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_b3_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.vit_b3_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_b5_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.vit_b5_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_b6_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.vit_b6_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_b9_mcg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.vit_b9_mcg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.calcium_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.calcium_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.iron_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.iron_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.magnesium_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.magnesium_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.potassium_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.potassium_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.zinc_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.zinc_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.phosphorus_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.phosphorus_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.selenium_mcg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.selenium_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.iodine_mcg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.iodine_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.vit_k_mcg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.vit_k_mcg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.copper_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.copper_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.manganese_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.manganese_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.sodium_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.sodium_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.cholesterol_mg_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.cholesterol_mg_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.omega3_g_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.omega3_g_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.omega6_g_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.omega6_g_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.monounsaturated_fat_g_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.monounsaturated_fat_g_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.polyunsaturated_fat_g_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.polyunsaturated_fat_g_100g,0) END,
+            CASE WHEN ml.recipe_id IS NOT NULL THEN r.trans_fat_g_per_portion * 100.0 / (r.total_weight_g / r.portions) ELSE COALESCE(f.trans_fat_g_100g,0) END
         FROM meal_log ml
         LEFT JOIN foods f ON ml.food_id = f.id
         LEFT JOIN recipes r ON ml.recipe_id = r.id
@@ -150,6 +169,17 @@ def get_meals_for_date(conn, date):
         n['zinc_mg'] = calc_nutrient(qty, unit, orig, vals[23])
         n['phosphorus_mg'] = calc_nutrient(qty, unit, orig, vals[24])
         n['selenium_mcg'] = calc_nutrient(qty, unit, orig, vals[25])
+        n['iodine_mcg'] = calc_nutrient(qty, unit, orig, vals[26])
+        n['vit_k_mcg'] = calc_nutrient(qty, unit, orig, vals[27])
+        n['copper_mg'] = calc_nutrient(qty, unit, orig, vals[28])
+        n['manganese_mg'] = calc_nutrient(qty, unit, orig, vals[29])
+        n['sodium_mg'] = calc_nutrient(qty, unit, orig, vals[30])
+        n['cholesterol_mg'] = calc_nutrient(qty, unit, orig, vals[31])
+        n['omega3_g'] = calc_nutrient(qty, unit, orig, vals[32])
+        n['omega6_g'] = calc_nutrient(qty, unit, orig, vals[33])
+        n['monounsaturated_fat_g'] = calc_nutrient(qty, unit, orig, vals[34])
+        n['polyunsaturated_fat_g'] = calc_nutrient(qty, unit, orig, vals[35])
+        n['trans_fat_g'] = calc_nutrient(qty, unit, orig, vals[36])
 
         if unit == 'portion':
             # Montre: "350g (1 portion)" ou "700g (2 portions)" si orig > 1
@@ -337,9 +367,9 @@ def generate_report(start_date, end_date, conn):
     lines.append("")
 
     # Vitamines
-    vit_keys = ['vit_a_mcg','vit_c_mg','vit_d_mcg','vit_e_mg',
+    vit_keys = ['vit_a_mcg','vit_c_mg','vit_d_mcg','vit_e_mg','vit_k_mcg',
                 'vit_b1_mg','vit_b2_mg','vit_b3_mg','vit_b5_mg','vit_b6_mg','vit_b9_mcg','vit_b12_mcg']
-    vit_names = {'vit_a_mcg':'A (rétinol)','vit_c_mg':'C','vit_d_mcg':'D','vit_e_mg':'E',
+    vit_names = {'vit_a_mcg':'A (rétinol)','vit_c_mg':'C','vit_d_mcg':'D','vit_e_mg':'E','vit_k_mcg':'K',
                  'vit_b1_mg':'B1 (thiamine)','vit_b2_mg':'B2 (riboflavine)','vit_b3_mg':'B3 (niacine)',
                  'vit_b5_mg':'B5','vit_b6_mg':'B6','vit_b9_mcg':'B9 (folates)','vit_b12_mcg':'B12'}
     vit_unit = {k:'µg' if 'mcg' in k else 'mg' for k in vit_keys}
@@ -355,11 +385,11 @@ def generate_report(start_date, end_date, conn):
     lines.append("")
 
     # Mineraux
-    min_keys = ['calcium_mg','iron_mg','magnesium_mg','potassium_mg','zinc_mg','phosphorus_mg','selenium_mcg']
+    min_keys = ['calcium_mg','iron_mg','magnesium_mg','potassium_mg','zinc_mg','phosphorus_mg','selenium_mcg','iodine_mcg','copper_mg','manganese_mg']
     min_names = {'calcium_mg':'Calcium','iron_mg':'Fer','magnesium_mg':'Magnésium',
-                  'potassium_mg':'Potassium','zinc_mg':'Zinc','phosphorus_mg':'Phosphore','selenium_mcg':'Sélénium'}
+                  'potassium_mg':'Potassium','zinc_mg':'Zinc','phosphorus_mg':'Phosphore','selenium_mcg':'Sélénium','iodine_mcg':'Iode','copper_mg':'Cuivre','manganese_mg':'Manganèse'}
     min_unit = {'calcium_mg':'mg','iron_mg':'mg','magnesium_mg':'mg',
-                 'potassium_mg':'mg','zinc_mg':'mg','phosphorus_mg':'mg','selenium_mcg':'µg'}
+                 'potassium_mg':'mg','zinc_mg':'mg','phosphorus_mg':'mg','selenium_mcg':'µg','iodine_mcg':'µg','copper_mg':'mg','manganese_mg':'mg'}
 
     lines.append("### 🪨 Minéraux (total période)\n")
     lines.append("| Minéral | VNR total | Apport | % VNR |")

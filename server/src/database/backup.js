@@ -1,4 +1,5 @@
 import fs from 'fs';
+import Database from 'better-sqlite3';
 import path from 'path';
 import { loadEnv, SERVER_ROOT } from '../config/env.js';
 
@@ -39,6 +40,28 @@ export function backupDatabase(customDbPath = null) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFilename = `nutrition_backup_${timestamp}.db`;
     const backupPath = path.join(backupDir, backupFilename);
+
+    // La base est en mode WAL : les dernieres transactions vivent dans le
+    // fichier `-wal`, pas dans le `.db`. Une simple copie du `.db` produit
+    // donc une sauvegarde INCOMPLETE (tables absentes ou colonnes recentes
+    // manquantes) — c'est-a-dire un filet de securite inexistant au moment
+    // precis ou il sert. `VACUUM INTO` ecrit une copie consolidee et
+    // coherente (WAL checkpointe) ; c'est synchrone et ne touche pas la
+    // base source. Repli sur la copie brute seulement en dernier recours.
+    try {
+      const source = new Database(resolvedPath, { readonly: true, fileMustExist: true });
+      try {
+        if (fs.existsSync(backupPath)) fs.unlinkSync(backupPath);
+        source.exec(`VACUUM INTO '${backupPath.replace(/'/g, "''")}'`);
+      } finally {
+        source.close();
+      }
+      return backupPath;
+    } catch (backupError) {
+      console.warn(
+        `[backup] VACUUM INTO indisponible (${backupError.message}), repli sur la copie brute.`
+      );
+    }
 
     fs.copyFileSync(resolvedPath, backupPath);
     return backupPath;

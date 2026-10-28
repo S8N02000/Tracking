@@ -975,6 +975,18 @@ function calcNutr(meal, col) {
       case 'L':       return +(portions * (r.fat_g_per_portion || 0)).toFixed(1);
       case 'AGS':     return +(portions * (r.saturated_fat_g_per_portion || 0)).toFixed(1);
       case 'sel':     return +(portions * (r.salt_g_per_portion || 0)).toFixed(2);
+      case 'mono':    return +(portions * (r.monounsaturated_fat_g_per_portion || 0)).toFixed(1);
+      case 'poly':    return +(portions * (r.polyunsaturated_fat_g_per_portion || 0)).toFixed(1);
+      case 'omega3':  return +(portions * (r.omega3_g_per_portion || 0)).toFixed(2);
+      case 'omega6':  return +(portions * (r.omega6_g_per_portion || 0)).toFixed(2);
+      case 'trans':   return +(portions * (r.trans_fat_g_per_portion || 0)).toFixed(2);
+      case 'chol':    return +(portions * (r.cholesterol_mg_per_portion || 0)).toFixed(0);
+      case 'sodium':  return +(portions * (r.sodium_mg_per_portion || (r.salt_g_per_portion || 0) / 2.54 * 1000)).toFixed(0);
+      case 'cuivre':  return +(portions * (r.copper_mg_per_portion || 0)).toFixed(2);
+      case 'manganese': return +(portions * (r.manganese_mg_per_portion || 0)).toFixed(2);
+      case 'selenium': return +(portions * (r.selenium_mcg_per_portion || 0)).toFixed(1);
+      case 'iode':    return +(portions * (r.iodine_mcg_per_portion || 0)).toFixed(0);
+      case 'vitK':    return +(portions * (r.vit_k_mcg_per_portion || 0)).toFixed(0);
       case 'Ca':      return +(portions * (r.calcium_mg_per_portion || 0)).toFixed(0);
       case 'Fe':      return +(portions * (r.iron_mg_per_portion || 0)).toFixed(2);
       case 'Mg':      return +(portions * (r.magnesium_mg_per_portion || 0)).toFixed(0);

@@ -27,7 +27,35 @@ export function runMigrations(customDbPath = null) {
     ['foods', 'caffeine_mg_100g',
      'caffeine_mg_100g REAL'],
     ['recipes', 'caffeine_mg_per_portion',
-     'caffeine_mg_per_portion REAL']
+     'caffeine_mg_per_portion REAL'],
+    // Micronutriments absents de `recipes` jusqu'a octobre 2026 : une recette
+    // qui les porte (selenium, iode, vit K, Cu, Mn, sodium, cholesterol,
+    // omegas, mono/poly/trans) ne pouvait pas les stocker -> donnee perdue a
+    // l'insert. ALTER idempotent + garde dans schema.sql.
+    ['recipes', 'selenium_mcg_per_portion',
+     'selenium_mcg_per_portion REAL'],
+    ['recipes', 'iodine_mcg_per_portion',
+     'iodine_mcg_per_portion REAL'],
+    ['recipes', 'vit_k_mcg_per_portion',
+     'vit_k_mcg_per_portion REAL'],
+    ['recipes', 'copper_mg_per_portion',
+     'copper_mg_per_portion REAL'],
+    ['recipes', 'manganese_mg_per_portion',
+     'manganese_mg_per_portion REAL'],
+    ['recipes', 'sodium_mg_per_portion',
+     'sodium_mg_per_portion REAL'],
+    ['recipes', 'cholesterol_mg_per_portion',
+     'cholesterol_mg_per_portion REAL'],
+    ['recipes', 'omega3_g_per_portion',
+     'omega3_g_per_portion REAL'],
+    ['recipes', 'omega6_g_per_portion',
+     'omega6_g_per_portion REAL'],
+    ['recipes', 'monounsaturated_fat_g_per_portion',
+     'monounsaturated_fat_g_per_portion REAL'],
+    ['recipes', 'polyunsaturated_fat_g_per_portion',
+     'polyunsaturated_fat_g_per_portion REAL'],
+    ['recipes', 'trans_fat_g_per_portion',
+     'trans_fat_g_per_portion REAL']
   ];
 
   // ── food_nutrient_references ────────────────────────────────────────────

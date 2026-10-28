@@ -9,6 +9,7 @@ Usage:
 """
 import argparse
 import json
+import os
 import sqlite3
 import sys
 import urllib.request
@@ -26,7 +27,29 @@ from compute_day import (  # noqa: E402
     get_sport,
 )
 
-ADMIN_SECRET = "ygmxjGjf9eki@f5woodxmwvwzkh56jrhqjakdi2x9m"
+
+def get_admin_secret() -> str:
+    """Secret admin lu de l'environnement — jamais codé en dur dans le dépôt.
+
+    Ordre : variable d'env NUTRITION_ADMIN_SECRET, puis fichier .env.prod du
+    projet (clé ADMIN_SECRET). Erreur explicite si absent.
+    """
+    secret = os.environ.get("NUTRITION_ADMIN_SECRET")
+    if secret:
+        return secret.strip()
+    env_file = Path("/data/nutrition/.env.prod")
+    if env_file.exists():
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line.startswith("ADMIN_SECRET="):
+                return line.split("=", 1)[1].strip().strip("'\"")
+    raise RuntimeError(
+        "Secret admin introuvable. Définir NUTRITION_ADMIN_SECRET "
+        "ou ADMIN_SECRET dans /data/nutrition/.env.prod"
+    )
+
+
+ADMIN_SECRET = get_admin_secret()
 API = "http://localhost:3001"
 OUT_DIR = Path("/data/nutrition/backup_reports")
 

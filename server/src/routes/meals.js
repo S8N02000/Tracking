@@ -23,6 +23,11 @@ router.get('/meals', (req, res) => {
            r.vit_a_mcg_per_portion, r.vit_c_mg_per_portion, r.vit_d_mcg_per_portion, r.vit_b12_mcg_per_portion, r.vit_e_mg_per_portion,
            r.vit_b1_mg_per_portion, r.vit_b2_mg_per_portion, r.vit_b3_mg_per_portion, r.vit_b5_mg_per_portion, r.vit_b6_mg_per_portion, r.vit_b9_mcg_per_portion,
            r.caffeine_mg_per_portion,
+           r.monounsaturated_fat_g_per_portion, r.polyunsaturated_fat_g_per_portion,
+           r.omega3_g_per_portion, r.omega6_g_per_portion, r.trans_fat_g_per_portion,
+           r.cholesterol_mg_per_portion, r.sodium_mg_per_portion,
+           r.copper_mg_per_portion, r.manganese_mg_per_portion,
+           r.selenium_mcg_per_portion, r.iodine_mcg_per_portion, r.vit_k_mcg_per_portion,
            r.total_weight_g as recipe_total_weight, r.portions as recipe_portions
     FROM meal_log ml
     LEFT JOIN foods f ON f.id = ml.food_id

@@ -79,6 +79,85 @@ function enrichRecipeWithIngredients(recipe, db) {
   return recipe;
 }
 
+// Nutriments calcules a partir des ingredients -> colonnes `recipes`.
+//
+// Regle de nullite : un calcul issu d'un ingredient non documente est une
+// BORNE INFERIEURE, pas une valeur. On ne l'ecrit donc en base que si le
+// nutriment est complet pour TOUS les ingredients ; sinon NULL (absence de
+// donnee), jamais 0. Les macros historiques sont conservees telles quelles
+// (comportement d'origine).
+const NUTRIENT_COLUMN_MAP = {
+  energy_kcal: 'energy_kcal_per_portion',
+  proteins_g: 'proteins_g_per_portion',
+  carbohydrates_g: 'carbohydrates_g_per_portion',
+  sugars_g: 'sugars_g_per_portion',
+  fiber_g: 'fiber_g_per_portion',
+  fat_g: 'fat_g_per_portion',
+  saturated_fat_g: 'saturated_fat_g_per_portion',
+  salt_g: 'salt_g_per_portion',
+  sodium_mg: 'sodium_mg_per_portion',
+  cholesterol_mg: 'cholesterol_mg_per_portion',
+  calcium_mg: 'calcium_mg_per_portion',
+  iron_mg: 'iron_mg_per_portion',
+  magnesium_mg: 'magnesium_mg_per_portion',
+  potassium_mg: 'potassium_mg_per_portion',
+  zinc_mg: 'zinc_mg_per_portion',
+  phosphorus_mg: 'phosphorus_mg_per_portion',
+  manganese_mg: 'manganese_mg_per_portion',
+  copper_mg: 'copper_mg_per_portion',
+  // foods.selenium_mg_100g / iodine_mg_100g portent des microgrammes.
+  selenium_mg: 'selenium_mcg_per_portion',
+  iodine_mg: 'iodine_mcg_per_portion',
+  vit_a_mcg: 'vit_a_mcg_per_portion',
+  vit_b1_mg: 'vit_b1_mg_per_portion',
+  vit_b2_mg: 'vit_b2_mg_per_portion',
+  vit_b3_mg: 'vit_b3_mg_per_portion',
+  vit_b5_mg: 'vit_b5_mg_per_portion',
+  vit_b6_mg: 'vit_b6_mg_per_portion',
+  vit_b9_mcg: 'vit_b9_mcg_per_portion',
+  vit_b12_mcg: 'vit_b12_mcg_per_portion',
+  vit_c_mg: 'vit_c_mg_per_portion',
+  vit_d_mcg: 'vit_d_mcg_per_portion',
+  vit_e_mg: 'vit_e_mg_per_portion',
+  vit_k_mcg: 'vit_k_mcg_per_portion',
+  omega3_g: 'omega3_g_per_portion',
+  omega6_g: 'omega6_g_per_portion',
+  omega9_g: 'monounsaturated_fat_g_per_portion',
+  polyunsaturated_fat_g: 'polyunsaturated_fat_g_per_portion',
+  trans_fat_g: 'trans_fat_g_per_portion'
+};
+
+// Colonnes ecrites par le calcul (hors macros historiques, ecrites telles
+// quelles par le code existant).
+const MICRO_COLUMNS = Object.entries(NUTRIENT_COLUMN_MAP)
+  .filter(([key]) => !['energy_kcal','proteins_g','carbohydrates_g','sugars_g','fiber_g','fat_g','saturated_fat_g','salt_g'].includes(key))
+  .map(([, column]) => column);
+
+// Valeurs a persister : NULL si le nutriment n'est pas complet, sinon la
+// valeur calculee.
+//
+// `existing` (ligne deja en base) sert de repli lors d'une MISE A JOUR : si
+// le recalcul est partiel (borne inferieure) mais que la recette portait
+// deja un profil complet etabli a la main (etiquette, analyse), on conserve
+// la valeur existante plutot que de la detruire. Une valeur complete,
+// elle, remplace toujours l'ancienne : le recalcul est plus frais que la
+// saisie manuelle.
+function nutrientValues(calculated, existing = null) {
+  const per = calculated.nutrients_per_portion;
+  const complete = calculated.nutrients_complete || {};
+  const values = {};
+  for (const [key, column] of Object.entries(NUTRIENT_COLUMN_MAP)) {
+    if (!MICRO_COLUMNS.includes(column)) continue;
+    if (complete[key] === false) {
+      const previous = existing ? existing[column] : null;
+      values[column] = previous !== undefined && previous !== null ? previous : null;
+      continue;
+    }
+    values[column] = per[key];
+  }
+  return values;
+}
+
 export function createRecipe(recipeData, ingredientsList, customDb = null) {
   const db = customDb || getDatabase();
 
@@ -108,14 +187,19 @@ export function createRecipe(recipeData, ingredientsList, customDb = null) {
 
   let recipeId = null;
 
+  const micro = nutrientValues(calculated);
+
   const runTx = db.transaction(() => {
+    const microCols = MICRO_COLUMNS.join(', ');
+    const microPlaceholders = MICRO_COLUMNS.map(() => '?').join(', ');
     const stmt = db.prepare(`
       INSERT INTO recipes (
         name, description, rating, portions, total_weight_g,
         energy_kcal_per_portion, proteins_g_per_portion, carbohydrates_g_per_portion,
         sugars_g_per_portion, fiber_g_per_portion, fat_g_per_portion,
-        saturated_fat_g_per_portion, salt_g_per_portion, source
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        saturated_fat_g_per_portion, salt_g_per_portion, source,
+        ${microCols}
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${microPlaceholders})
     `);
 
     const res = stmt.run(
@@ -132,7 +216,8 @@ export function createRecipe(recipeData, ingredientsList, customDb = null) {
       p.fat_g,
       p.saturated_fat_g,
       p.salt_g,
-      source || 'user_input'
+      source || 'user_input',
+      ...MICRO_COLUMNS.map((column) => micro[column])
     );
 
     recipeId = res.lastInsertRowid;
@@ -181,13 +266,17 @@ export function updateRecipe(id, recipeData, ingredientsList, customDb = null) {
   const calculated = calculateRecipeNutrients(fullIngredients, portions);
   const p = calculated.nutrients_per_portion;
 
+  const micro = nutrientValues(calculated, existing);
+
   const runTx = db.transaction(() => {
+    const microSets = MICRO_COLUMNS.map((column) => `${column} = ?`).join(', ');
     const stmt = db.prepare(`
       UPDATE recipes SET
         name = ?, description = ?, rating = ?, portions = ?, total_weight_g = ?,
         energy_kcal_per_portion = ?, proteins_g_per_portion = ?, carbohydrates_g_per_portion = ?,
         sugars_g_per_portion = ?, fiber_g_per_portion = ?, fat_g_per_portion = ?,
         saturated_fat_g_per_portion = ?, salt_g_per_portion = ?, source = ?,
+        ${microSets},
         updated_at = date('now')
       WHERE id = ?
     `);
@@ -207,6 +296,7 @@ export function updateRecipe(id, recipeData, ingredientsList, customDb = null) {
       p.saturated_fat_g,
       p.salt_g,
       source || 'user_input',
+      ...MICRO_COLUMNS.map((column) => micro[column]),
       id
     );
 
