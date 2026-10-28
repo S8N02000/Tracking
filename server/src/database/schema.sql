@@ -223,6 +223,44 @@ CREATE TABLE IF NOT EXISTS body_scans (
     created_at          TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
+-- 11. NUTRITIONAL REFERENCES (donateurs declaratifs pour imputation minerale)
+-- Table de correspondance ALIMENT -> ALIMENT DE REFERENCE, declaree et
+-- maintenue manuellement. Sert de source d'imputation prioritaire (niveau de
+-- confiance le plus eleve) quand un aliment n'a pas sa composition
+-- mineralogique complete (cf. domaine PRAL, src/domain/pral).
+--
+-- Deux modes :
+--   - 'donor' : la composition minerale de l'aliment de reference est
+--               reprise pour les nutriments manquants de l'aliment source.
+--               reference_id est obligatoire.
+--   - 'zero'  : l'aliment est structurellement depourvu de ces minéraux
+--               (eau, sel, huile, fecule : la valeur absente EST la
+--               valeur reelle). reference_id est alors NULL.
+--
+-- La provenance est explicite : la reference, sa source et la note sont
+-- auditees, et l'imputation correspondante est journalisee dans la reponse
+-- API. Aucun appariement automatique par similarite n'est effectue.
+CREATE TABLE IF NOT EXISTS food_nutrient_references (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    food_id         INTEGER NOT NULL REFERENCES foods(id) ON DELETE CASCADE,
+    reference_id    INTEGER REFERENCES foods(id) ON DELETE CASCADE,
+    mode            TEXT    NOT NULL DEFAULT 'donor' CHECK (mode IN ('donor', 'zero')),
+    -- Fenêtre de validité de la curation (dates ISO 'YYYY-MM-DD').
+    -- NULL = borne ouverte. Un donneur n'est appliqué à une ligne que si
+    -- la date de la ligne tombe dans la fenêtre : une curation faite
+    -- aujourd'hui ne réécrit pas l'historique qu'elle ne couvre pas.
+    valid_from      TEXT    NOT NULL DEFAULT '',
+    valid_to        TEXT,
+    note            TEXT,
+    created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(food_id, mode, valid_from),
+    CHECK (
+        (mode = 'donor' AND reference_id IS NOT NULL AND food_id <> reference_id) OR
+        (mode = 'zero'  AND reference_id IS NULL)
+    ),
+    CHECK (valid_to IS NULL OR valid_to = '' OR valid_from = '' OR valid_to >= valid_from)
+);
+
 -- INDEXES
 CREATE INDEX IF NOT EXISTS idx_meal_date       ON meal_log(date_);
 CREATE INDEX IF NOT EXISTS idx_meal_period     ON meal_log(period);
@@ -237,6 +275,7 @@ CREATE INDEX IF NOT EXISTS idx_foods_name      ON foods(name);
 CREATE INDEX IF NOT EXISTS idx_foods_active    ON foods(is_active);
 CREATE INDEX IF NOT EXISTS idx_body_scans_date ON body_scans(scan_date);
 CREATE INDEX IF NOT EXISTS idx_body_scans_dt   ON body_scans(scan_datetime);
+CREATE INDEX IF NOT EXISTS idx_fnr_food        ON food_nutrient_references(food_id);
 
 -- 9. EXPORTS METADATA (pour suivi delta Boditrax entre exports)
 CREATE TABLE IF NOT EXISTS exports_metadata (

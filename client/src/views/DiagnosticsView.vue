@@ -240,7 +240,7 @@
                 class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider"
                 :class="statusBadgeClass(ratio.status)"
               >
-                {{ formatStatusLabel(ratio.status) }}
+                {{ ratio.band_label || formatStatusLabel(ratio.status) }}
               </span>
             </div>
 
@@ -1209,6 +1209,9 @@ const statusBadgeClass = (status) => {
   if (status === 'SOUS_OPTIMAL' || status === 'ATTENTION') return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
   return 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
 };
+
+// Un indicateur de population (PRAL) n'est pas un diagnostic individuel :
+// sa gravité clinique est portée par la bande, pas par un statut binaire.
 
 const formatStatusLabel = (status) => {
   const map = {

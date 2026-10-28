@@ -58,6 +58,8 @@ NUT_FIELDS = [
     "vit_b3_mg_100g", "vit_b5_mg_100g", "vit_b6_mg_100g",
     "vit_b9_mcg_100g", "vit_b12_mcg_100g", "vit_c_mg_100g",
     "vit_d_mcg_100g", "vit_e_mg_100g", "vit_k_mcg_100g",
+    # Lipides détaillés + divers
+    "polyunsaturated_fat_g_100g", "caffeine_mg_100g",
 ]
 
 # Mapping: suffixe ingrédient → suffixe colonne per_portion
@@ -87,6 +89,23 @@ PER_PORTION_MAP = {
     "vit_b5_mg_100g":    "vit_b5_mg_per_portion",
     "vit_b6_mg_100g":    "vit_b6_mg_per_portion",
     "vit_b9_mcg_100g":   "vit_b9_mcg_per_portion",
+    # Complété le 24/10/2026 : sans ces colonnes, la branche "recette" des agrégats
+    # retombe sur ELSE 0 pour ces nutriments (vitamine K, oméga, sélénium, iode…).
+    # Elles sont ALORS dérivées de recipe_ingredients × foods — jamais saisies.
+    "starch_g_100g":    "starch_g_per_portion",
+    "trans_fat_g_100g": "trans_fat_g_per_portion",
+    "omega3_g_100g":    "omega3_g_per_portion",
+    "omega6_g_100g":    "omega6_g_per_portion",
+    "omega9_g_100g":    "omega9_g_per_portion",
+    "polyunsaturated_fat_g_100g": "polyunsaturated_fat_g_per_portion",
+    "sodium_mg_100g":   "sodium_mg_per_portion",
+    "cholesterol_mg_100g": "cholesterol_mg_per_portion",
+    "manganese_mg_100g": "manganese_mg_per_portion",
+    "copper_mg_100g":   "copper_mg_per_portion",
+    "selenium_mg_100g": "selenium_mg_per_portion",
+    "iodine_mg_100g":   "iodine_mg_per_portion",
+    "vit_k_mcg_100g":   "vit_k_mcg_per_portion",
+    "caffeine_mg_100g": "caffeine_mg_per_portion",
 }
 
 
@@ -243,51 +262,92 @@ def build_recipe_insert(conn: sqlite3.Connection, data: dict) -> int:
 
     # ── 1. Calcul des nutriments totaux depuis ingrédients ──────────────────
     totals = {f: 0.0 for f in NUT_FIELDS}
+    contributors = {f: 0 for f in NUT_FIELDS}  # comb. d'ingrédients portent la valeur
     ingredient_details = []  # pour affichage
+    ingredient_rows = []    # lignes foods brutes (pour la couverture)
 
     for ing in ingredients:
-        slug = ing["slug"]
+        slug = ing.get("slug") or ""
         qty  = float(ing["qty"])
         unit = ing["unit"]
         original_qty = ing.get("original_qty", qty)
         original_unit_ing = ing.get("original_unit", unit)
 
-        food_row = find_food_by_slug(conn, slug)
+        # food_id prioritaire : le matching par slug est flou pour les aromates
+        # (herbes de Provence, poivre, mixes) qui ont plusieurs fiches proches.
+        food_row = None
+        if ing.get("food_id") is not None:
+            cur = conn.execute("SELECT * FROM foods WHERE id = ?", (int(ing["food_id"]),))
+            row = cur.fetchone()
+            if row:
+                food_row = dict(zip([d[0] for d in cur.description], row))
+        else:
+            found = find_food_by_slug(conn, slug)
+            if found:
+                food_row = dict(found)
         if not food_row:
             raise ValueError(
-                f"Ingredient non trouvé en base: '{slug}'. "
+                f"Ingredient non trouvé en base: '{slug or ing.get('food_id')}'. "
                 "Ajoute-le d'abord avec add_food.py"
             )
-        food_id = dict(food_row)["id"]
-        weight_per_unit = dict(food_row).get("weight_per_unit_g", 0.0)
+        food_id = food_row["id"]
+        weight_per_unit = food_row.get("weight_per_unit_g", 0.0)
 
         qty_g = unit_to_grams(qty, unit, slug, weight_per_unit, food_id=food_id, conn=conn)
         factor = qty_g / 100.0
 
         ing_detail = {
             "food_id": food_id,
-            "name": dict(food_row)["name"],
+            "name": food_row["name"],
             "slug": slug,
             "quantity_g": qty_g,
             "original_qty": original_qty,
             "original_unit": original_unit_ing,
         }
         ingredient_details.append(ing_detail)
+        ingredient_rows.append(food_row)
 
-        # Accumule nutriments
+        # Accumule nutriments + compte qui porte chaque valeur
         for f in NUT_FIELDS:
-            v = dict(food_row).get(f)
+            v = food_row.get(f)
             if v is not None:
                 totals[f] += float(v) * factor
+                contributors[f] += 1
 
     # ── 2. Prépare les colonnes per_portion ───────────────────────────────
-    per_portion = {}
-    for from_col, to_col in PER_PORTION_MAP.items():
-        per_portion[to_col] = round(totals[from_col] / portions, 3) if portions > 0 else 0.0
+    # Un ingrédient sans aucun apport (eau) ne compte pas au dénominateur de
+    # couverture : son NULL est un zéro connu, pas une donnée manquante.
+    def _is_inert(row):
+        for f in NUT_FIELDS:
+            v = row.get(f)
+            if v is not None and float(v) != 0.0:
+                return False
+        return True
 
-    # Champs additionnels (non dans PER_PORTION_MAP mais utiles)
-    per_portion["omega3_g_per_portion"]     = round(totals.get("omega3_g_100g", 0) / portions, 3)
-    per_portion["omega6_g_per_portion"]     = round(totals.get("omega6_g_100g", 0) / portions, 3)
+    n_ing = len(ingredient_details)
+    n_effective = sum(0 if _is_inert(r) else 1 for r in ingredient_rows)
+
+    per_portion = {}
+    partial = {}
+    unknown = []
+    for from_col, to_col in PER_PORTION_MAP.items():
+        known = contributors.get(from_col, 0)
+        if known == 0:
+            # Aucun composant ne porte ce nutriment : on ne fabrique pas de zéro,
+            # la colonne reste NULL (valeur inconnue, pas absence mesurée).
+            per_portion[to_col] = None
+            unknown.append(to_col)
+        else:
+            per_portion[to_col] = round(totals[from_col] / portions, 3) if portions > 0 else None
+            if known < n_effective:
+                partial[to_col] = [known, n_effective]
+
+    coverage = {
+        "ingredients_total": n_ing,
+        "ingredients_with_nutrition": n_effective,
+        "partial": partial,
+        "unknown": unknown,
+    }
 
     # Filtre les colonnes per_portion qui n'existent pas dans recipes (évite OperationalError)
     existing_recipe_cols = {r[1] for r in conn.execute("PRAGMA table_info(recipes)").fetchall()}
@@ -305,6 +365,10 @@ def build_recipe_insert(conn: sqlite3.Connection, data: dict) -> int:
         name, description, portions, total_weight,
         1, source,
     ] + list(per_portion_filtered.values())
+
+    if "nutrient_coverage" in existing_recipe_cols:
+        recipe_cols.append("nutrient_coverage")
+        recipe_vals.append(json.dumps(coverage, ensure_ascii=False))
 
     placeholders = ", ".join(["?"] * len(recipe_cols))
     sql = f"INSERT INTO recipes ({', '.join(recipe_cols)}) VALUES ({placeholders})"
@@ -419,12 +483,17 @@ def main():
             parsed = parse_ingredients_str(ing)
             normalized_ings.extend(parsed)
         elif isinstance(ing, dict):
+            qty = float(ing.get("qty", ing.get("quantity", 1)))
+            unit = ing.get("unit", "g")
             normalized_ings.append({
                 "slug":  ing.get("slug", ing.get("name", "")),
-                "qty":   float(ing.get("qty", ing.get("quantity", 1))),
-                "unit":  ing.get("unit", ing.get("unit", "g")),
-                "original_qty":  float(ing.get("qty", ing.get("quantity", 1))),
-                "original_unit": ing.get("unit", ing.get("unit", "g")),
+                # food_id explicite : évite le matching par slug, ambigu pour les
+                # aromates (herbes de Provence, poivre) qui ont plusieurs fiches.
+                "food_id": ing.get("food_id"),
+                "qty":   qty,
+                "unit":  unit,
+                "original_qty":  float(ing.get("original_qty", qty)),
+                "original_unit": ing.get("original_unit", unit),
             })
     data["ingredients"] = normalized_ings
 

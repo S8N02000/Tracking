@@ -284,7 +284,7 @@ def compute_totals(meals: list[dict]) -> dict:
     """
     total = {k: 0.0 for k in (
         "kcal", "proteins_g", "carbohydrates_g", "sugars_g", "fiber_g",
-        "fat_g", "saturated_fat_g", "salt_g", "omega3_g", "omega6_g",
+        "fat_g", "saturated_fat_g", "salt_g", "omega3_g", "omega6_g", "omega9_g",
         "calcium_mg", "iron_mg", "magnesium_mg", "potassium_mg",
         "zinc_mg", "phosphorus_mg", "sodium_mg",
         "vit_a_mcg", "vit_b1_mg", "vit_b2_mg", "vit_b3_mg", "vit_b5_mg",

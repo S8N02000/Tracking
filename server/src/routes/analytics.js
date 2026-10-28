@@ -5,6 +5,7 @@ import {
   getMealDistribution,
   getClinicalDiagnostics
 } from '../services/analyticsService.js';
+import { getPralReport, getPralRatio } from '../services/pralService.js';
 
 const router = Router();
 
@@ -59,6 +60,23 @@ router.get('/analytics/diagnostics', (req, res, next) => {
 
     const data = getClinicalDiagnostics(start, end);
     res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/analytics/pral?start=YYYY-MM-DD&end=YYYY-MM-DD
+// Endpoint dédié : rapport PRAL complet (score, intervalle d'incertitude,
+// journées valides/exclues, qualité des données, provenance des donneurs).
+router.get('/analytics/pral', (req, res, next) => {
+  try {
+    const today = new Date().toISOString().substring(0, 10);
+    const start = req.query.start || today;
+    const end = req.query.end || today;
+
+    const report = getPralReport(start, end);
+    const ratio = getPralRatio(start, end);
+    res.json({ ...report, ratio });
   } catch (err) {
     next(err);
   }

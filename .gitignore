@@ -13,3 +13,7 @@ uploads
 .idea/
 sqlite/__pycache__/
 backup_reports/
+
+# Sauvegardes SQLite et artefacts de rollback
+*.db.bak*
+_rollback_backup/

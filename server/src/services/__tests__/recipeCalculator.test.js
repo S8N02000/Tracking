@@ -60,4 +60,84 @@ describe('Recipe Calculator Unit Tests', () => {
   it('should reject invalid portion count <= 0', () => {
     expect(() => calculateRecipeNutrients([{ quantity_g: 100, food: {} }], 0)).toThrow();
   });
+
+  // ---------------------------------------------------------------------
+  // Complétude des totaux : un NULL ingrédient ne doit pas devenir un zéro
+  // silencieux. Les totaux numériques sont conservés (compatibilité des
+  // agrégats historiques) mais la complétude est exposée explicitement.
+  // ---------------------------------------------------------------------
+  describe('complétude des totaux', () => {
+    it('marque comme partiel un nutriment dont un ingrédient est non documenté', () => {
+      const ingredients = [
+        {
+          quantity_g: 100,
+          food: {
+            energy_kcal_100g: 100,
+            proteins_g_100g: 10,
+            calcium_mg_100g: 20
+          }
+        },
+        {
+          quantity_g: 100,
+          food: {
+            energy_kcal_100g: 200,
+            proteins_g_100g: 5
+            // calcium_mg_100g absent => non documenté
+          }
+        }
+      ];
+
+      const res = calculateRecipeNutrients(ingredients, 2);
+
+      // Le calcium n'est documenté que par le premier ingrédient.
+      expect(res.partial_nutrients).toContain('calcium_mg');
+      expect(res.nutrients_complete.calcium_mg).toBe(false);
+
+      // Le total numérique reste celui des valeurs connues (borne inférieure),
+      // et n'est PAS la somme de deux zéros.
+      expect(res.nutrients_total.calcium_mg).toBe(20);
+    });
+
+    it('distingue "aucun ingrédient ne documente" de "zéro"', () => {
+      const ingredients = [
+        {
+          quantity_g: 100,
+          food: {
+            energy_kcal_100g: 100,
+            proteins_g_100g: 10
+            // aucun minéral documenté
+          }
+        }
+      ];
+
+      const res = calculateRecipeNutrients(ingredients, 1);
+
+      expect(res.undocumented_nutrients).toContain('calcium_mg');
+      expect(res.undocumented_nutrients).toContain('magnesium_mg');
+      expect(res.partial_nutrients).toContain('calcium_mg');
+      // Complétude «false» et documenté «false» : on ne sait pas, ce n'est pas 0.
+      expect(res.nutrients_complete.calcium_mg).toBe(false);
+      expect(res.nutrients_total.calcium_mg).toBe(0);
+    });
+
+    it('déclare complet un nutriment documenté par tous les ingrédients', () => {
+      const ingredients = [
+        {
+          quantity_g: 100,
+          food: { energy_kcal_100g: 100, proteins_g_100g: 10, calcium_mg_100g: 20 }
+        },
+        {
+          quantity_g: 100,
+          food: { energy_kcal_100g: 200, proteins_g_100g: 5, calcium_mg_100g: 30 }
+        }
+      ];
+
+      const res = calculateRecipeNutrients(ingredients, 2);
+
+      expect(res.nutrients_complete.calcium_mg).toBe(true);
+      expect(res.partial_nutrients).not.toContain('calcium_mg');
+      expect(res.undocumented_nutrients).not.toContain('calcium_mg');
+      expect(res.nutrients_total.calcium_mg).toBe(50);
+    });
+  });
 });

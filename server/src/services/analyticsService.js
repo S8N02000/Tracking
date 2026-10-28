@@ -1,5 +1,6 @@
 import { getDailyDashboard } from './dashboardAggregator.js';
 import { getDatabase } from '../database/db.js';
+import { getPralRatio } from './pralService.js';
 
 export function getCorrelationSeries(startDateStr, endDateStr, customDb = null) {
   const dashboard = getDailyDashboard(startDateStr, endDateStr, customDb);
@@ -720,19 +721,11 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
     satFatProblem = true;
   }
 
-  // PRAL calculation: 0.49*Prot + 0.037*P - 0.021*K - 0.026*Ca - 0.013*Mg
-  const pralScore = Math.round(
-    (0.49 * avgProteins + 0.037 * avgPhosphorus - 0.021 * avgPotassium - 0.026 * avgCalcium - 0.013 * avgMagnesium) * 10
-  ) / 10;
-  let pralStatus = 'OPTIMAL';
-  let pralProblem = false;
-  if (pralScore > 15) {
-    pralStatus = 'CRITIQUE';
-    pralProblem = true;
-  } else if (pralScore > 5) {
-    pralStatus = 'ATTENTION';
-    pralProblem = true;
-  }
+  // PRAL : calcul délégué au service PRAL (domaine pur + frontière SQL).
+  // Le ratio conserve l'identifiant historique `indice_pral` : compatibilité
+  // API/frontend préservée, mais la formule, la qualité des données, le
+  // dénominateur et les seuils ne sont plus calculés ici.
+  const pralRatio = getPralRatio(startDateStr, endDateStr, db);
 
   const totalMacroKcal = (avgProteins * 4) + (avgCarbs * 4) + (avgFat * 9) || 1;
   const macroSplit = {
@@ -802,16 +795,7 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
       is_problem: satFatProblem,
       explanation: 'Un excès d’acides gras saturés (>33% des lipides totaux) élève le LDL-cholestérol sanguin.'
     },
-    {
-      id: 'indice_pral',
-      label: 'Indice PRAL (Charge Acide)',
-      value: pralScore,
-      unit: 'mEq / jour',
-      target_label: '<= 0 (Alcalinisant/Neutre)',
-      status: pralStatus,
-      is_problem: pralProblem,
-      explanation: 'Un score nettement positif indique une alimentation acidifiante pour l’organisme. Augmentez l’apport en fruits et légumes frais.'
-    }
+    pralRatio
   ];
 
   // Weighted Compliance Score
