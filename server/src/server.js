@@ -1,7 +1,17 @@
 import app from './app.js';
 import { closeDatabase, getDatabase } from './database/db.js';
+import { runMigrations } from './database/migrate.js';
 
 const PORT = process.env.PORT || 3001;
+
+// Migrations exécutées au démarrage du serveur (et non à l'import de
+// app.js) : le point d'entrée est le seul endroit qui autorise une écriture
+// de schéma au démarrage.
+try {
+  runMigrations();
+} catch (err) {
+  console.error('Failed to run initial migrations:', err);
+}
 
 // ── Daily DB refresh at 3:00 AM ──────────────────────────────────────────────
 // better-sqlite3 holds a WAL snapshot; external writers (Hermes/Python)

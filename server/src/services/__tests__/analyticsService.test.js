@@ -1,6 +1,4 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import fs from 'fs';
-import path from 'path';
 import { runMigrations } from '../../database/migrate.js';
 import { getDatabase, closeDatabase } from '../../database/db.js';
 import {
@@ -9,15 +7,14 @@ import {
   getMealDistribution,
   getClinicalDiagnostics
 } from '../analyticsService.js';
+import { makeTempDbPath, removeTempDb } from '../../test-utils/tempDb.js';
 
 describe('Analytics Service Unit Tests', () => {
-  const tempDbPath = path.resolve(process.cwd(), 'temp_analytics_db.db');
+  const tempDbPath = makeTempDbPath('temp_analytics_db.db');
 
   afterEach(() => {
     closeDatabase();
-    if (fs.existsSync(tempDbPath)) fs.unlinkSync(tempDbPath);
-    if (fs.existsSync(`${tempDbPath}-wal`)) fs.unlinkSync(`${tempDbPath}-wal`);
-    if (fs.existsSync(`${tempDbPath}-shm`)) fs.unlinkSync(`${tempDbPath}-shm`);
+    removeTempDb(tempDbPath);
   });
 
   it('should generate correlation series and micronutrient radar data correctly', () => {

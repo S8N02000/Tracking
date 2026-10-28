@@ -7,7 +7,6 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { authMiddleware } from './middlewares/auth.js';
 import { errorHandler } from './middlewares/errorHandler.js';
-import { runMigrations } from './database/migrate.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,14 +24,13 @@ import boditraxRoutes from './routes/boditrax.js';
 import openfoodfactsRoutes from './routes/openfoodfacts.js';
 import adminRoutes from './routes/admin.js';
 
-dotenv.config();
+import { loadEnv } from './config/env.js';
 
-// Ensure migrations run on server startup
-try {
-  runMigrations();
-} catch (err) {
-  console.error('Failed to run initial migrations:', err);
-}
+loadEnv();
+
+// Les migrations sont exécutées par le point d'entrée HTTP (server.js), pas
+// au chargement de ce module : importer `app.js` (tests, scripts) ne doit
+// jamais muter la base de données.
 
 const app = express();
 

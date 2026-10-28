@@ -1,14 +1,21 @@
-import { describe, it, expect, afterEach, beforeAll } from 'vitest';
-import fs from 'fs';
-import path from 'path';
+import { describe, it, expect, afterEach } from 'vitest';
 import request from 'supertest';
 import { runMigrations } from '../../database/migrate.js';
 import { getDatabase, closeDatabase } from '../../database/db.js';
 import { getClinicalDiagnostics } from '../analyticsService.js';
 import { getPralRatio } from '../pralService.js';
+import { makeTempDbPath, removeTempDb } from '../../test-utils/tempDb.js';
+
+const tempDbPath = makeTempDbPath('temp_pral_api_db.db');
+
+// DOIT précéder l'import de app.js : app.js résout la base au chargement
+// du module, via DB_PATH. Sans cela, le test s'exécute contre la base de
+// PRODUCTION au lieu de la base temporaire.
+process.env.DB_PATH = tempDbPath;
+// Secret d'administration imposé par le test : jamais celui du `.env`.
+process.env.ADMIN_SECRET = 'test_secret';
 
 describe('PRAL — non-régression API et contrat ratio', () => {
-  const tempDbPath = path.resolve(process.cwd(), 'temp_pral_api_db.db');
   let testDb = null;
   let app = null;
 
@@ -16,9 +23,7 @@ describe('PRAL — non-régression API et contrat ratio', () => {
     if (testDb?.open) testDb.close();
     testDb = null;
     closeDatabase();
-    for (const suffix of ['', '-wal', '-shm']) {
-      if (fs.existsSync(`${tempDbPath}${suffix}`)) fs.unlinkSync(`${tempDbPath}${suffix}`);
-    }
+    removeTempDb(tempDbPath);
   });
 
   /**

@@ -1,22 +1,19 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import fs from 'fs';
-import path from 'path';
 import { runMigrations } from '../../database/migrate.js';
 import { getDatabase, closeDatabase } from '../../database/db.js';
 import { getPralReport, getPralRatio, aggregateResolvedLines } from '../pralService.js';
 import { STRATEGY, resolveLine, buildResolutionContext } from '../../domain/pral/index.js';
+import { makeTempDbPath, removeTempDb } from '../../test-utils/tempDb.js';
 
 describe('PRAL — service (intégration)', () => {
-  const tempDbPath = path.resolve(process.cwd(), 'temp_pral_db.db');
+  const tempDbPath = makeTempDbPath('temp_pral_db.db');
   let testDb = null;
 
   afterEach(() => {
     if (testDb?.open) testDb.close();
     testDb = null;
     closeDatabase();
-    for (const suffix of ['', '-wal', '-shm']) {
-      if (fs.existsSync(`${tempDbPath}${suffix}`)) fs.unlinkSync(`${tempDbPath}${suffix}`);
-    }
+    removeTempDb(tempDbPath);
   });
 
   /** Crée une base minimale avec un aliment documenté et un repas. */

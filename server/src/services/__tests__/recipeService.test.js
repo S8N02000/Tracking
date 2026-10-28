@@ -1,18 +1,15 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import fs from 'fs';
-import path from 'path';
 import { runMigrations } from '../../database/migrate.js';
 import { getDatabase, closeDatabase } from '../../database/db.js';
 import { createRecipe, getRecipeById, deleteRecipe } from '../recipeService.js';
+import { makeTempDbPath, removeTempDb } from '../../test-utils/tempDb.js';
 
 describe('Recipe Service Integration Tests', () => {
-  const tempDbPath = path.resolve(process.cwd(), 'temp_recipe_db.db');
+  const tempDbPath = makeTempDbPath('temp_recipe_db.db');
 
   afterEach(() => {
     closeDatabase();
-    if (fs.existsSync(tempDbPath)) fs.unlinkSync(tempDbPath);
-    if (fs.existsSync(`${tempDbPath}-wal`)) fs.unlinkSync(`${tempDbPath}-wal`);
-    if (fs.existsSync(`${tempDbPath}-shm`)) fs.unlinkSync(`${tempDbPath}-shm`);
+    removeTempDb(tempDbPath);
   });
 
   it('should create a recipe with ingredients and calculate nutrients', () => {

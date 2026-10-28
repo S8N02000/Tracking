@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
-import dotenv from 'dotenv';
+import { loadEnv } from '../config/env.js';
 
-dotenv.config();
+loadEnv();
 
 export function safeCompare(providedToken, secretToken) {
   if (typeof providedToken !== 'string' || typeof secretToken !== 'string') {

@@ -34,6 +34,9 @@ services:
     volumes:
       # Base SQLite WAL — données critiques (rw)
       - ./sqlite:/app/sqlite:rw
+      # Sauvegardes avant migration (rw) — sans ce montage, la sauvegarde
+      # échoue (EACCES) et aucune copie n'est produite en production.
+      - ./backup_reports:/app/backup_reports:rw
       # Scripts Python MCP agent
       - ./scripts:/app/scripts:ro
       # Catalogue CSV foods

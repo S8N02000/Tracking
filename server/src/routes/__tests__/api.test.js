@@ -1,25 +1,33 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import request from 'supertest';
-import app from '../../app.js';
 import { getDatabase, closeDatabase } from '../../database/db.js';
 import { runMigrations } from '../../database/migrate.js';
-import path from 'path';
-import fs from 'fs';
+import { makeTempDbPath, removeTempDb } from '../../test-utils/tempDb.js';
+
+const tempDbPath = makeTempDbPath('temp_api_test.db');
+const adminSecret = 'test_secret';
+
+// Le secret d'administration est imposé par le test AVANT tout import de
+// `app.js` : le middleware lit `process.env.ADMIN_SECRET` au moment de la
+// requête, et le test ne doit dépendre ni du `.env` local ni du secret de
+// production.
+process.env.ADMIN_SECRET = adminSecret;
+// Idem pour la base : `app.js` doit pointer sur la base temporaire, jamais
+// sur la base de production.
+process.env.DB_PATH = tempDbPath;
+
+const { default: app } = await import('../../app.js');
 
 describe('Complete REST API Integration Tests', () => {
-  const tempDbPath = path.resolve(process.cwd(), 'temp_api_test.db');
-  const adminSecret = process.env.ADMIN_SECRET || 'test_secret';
-
   beforeEach(() => {
     process.env.DB_PATH = tempDbPath;
+    process.env.ADMIN_SECRET = adminSecret;
     runMigrations(tempDbPath);
   });
 
   afterEach(() => {
     closeDatabase();
-    if (fs.existsSync(tempDbPath)) fs.unlinkSync(tempDbPath);
-    if (fs.existsSync(`${tempDbPath}-wal`)) fs.unlinkSync(`${tempDbPath}-wal`);
-    if (fs.existsSync(`${tempDbPath}-shm`)) fs.unlinkSync(`${tempDbPath}-shm`);
+    removeTempDb(tempDbPath);
   });
 
   it('CRUD Foods via REST API', async () => {

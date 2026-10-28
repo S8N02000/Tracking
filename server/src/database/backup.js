@@ -1,28 +1,51 @@
 import fs from 'fs';
 import path from 'path';
-import dotenv from 'dotenv';
+import { loadEnv, SERVER_ROOT } from '../config/env.js';
 
-dotenv.config();
+loadEnv();
 
+/**
+ * Sauvegarde la base SQLite avant migration.
+ *
+ * La sauvegarde est une PRÉCAUTION, pas une précondition : si elle échoue
+ * (répertoire non inscriptible, disque plein, base absente), la migration
+ * doit tout de même s'exécuter. Avant, l'échec de la sauvegarde
+ * interrompait la migration complète — en production, le répertoire de
+ * sauvegarde n'est pas monté en écriture et la migration n'était donc
+ * jamais appliquée au démarrage.
+ *
+ * @returns {string|null} chemin de la sauvegarde, ou null si aucune copie
+ *   n'a pu être produite.
+ */
 export function backupDatabase(customDbPath = null) {
-  const dbPath = customDbPath || process.env.DB_PATH || '../sqlite/nutrition.db';
-  const resolvedPath = path.isAbsolute(dbPath)
-    ? dbPath
-    : path.resolve(process.cwd(), dbPath);
+  try {
+    const dbPath = customDbPath || process.env.DB_PATH || '../sqlite/nutrition.db';
+    const resolvedPath = path.isAbsolute(dbPath)
+      ? dbPath
+      : path.resolve(SERVER_ROOT, dbPath);
 
-  if (!fs.existsSync(resolvedPath)) {
+    if (!fs.existsSync(resolvedPath)) {
+      return null;
+    }
+
+    const backupDir = process.env.BACKUP_DIR
+      ? path.resolve(process.env.BACKUP_DIR)
+      : path.resolve(SERVER_ROOT, '..', 'backup_reports');
+
+    if (!fs.existsSync(backupDir)) {
+      fs.mkdirSync(backupDir, { recursive: true });
+    }
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupFilename = `nutrition_backup_${timestamp}.db`;
+    const backupPath = path.join(backupDir, backupFilename);
+
+    fs.copyFileSync(resolvedPath, backupPath);
+    return backupPath;
+  } catch (err) {
+    console.warn(
+      `[backup] Sauvegarde impossible, migration pursue sans copie : ${err.message}`
+    );
     return null;
   }
-
-  const backupDir = path.resolve(process.cwd(), 'backup_reports');
-  if (!fs.existsSync(backupDir)) {
-    fs.mkdirSync(backupDir, { recursive: true });
-  }
-
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const backupFilename = `nutrition_backup_${timestamp}.db`;
-  const backupPath = path.join(backupDir, backupFilename);
-
-  fs.copyFileSync(resolvedPath, backupPath);
-  return backupPath;
 }

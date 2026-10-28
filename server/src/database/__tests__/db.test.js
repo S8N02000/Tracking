@@ -1,22 +1,13 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { getDatabase, closeDatabase } from '../db.js';
-import path from 'path';
-import fs from 'fs';
+import { makeTempDbPath, removeTempDb } from '../../test-utils/tempDb.js';
 
 describe('Database Module (db.js)', () => {
-  const tempDbPath = path.resolve(process.cwd(), 'temp_test_db.db');
+  const tempDbPath = makeTempDbPath('temp_test_db.db');
 
   afterEach(() => {
     closeDatabase();
-    if (fs.existsSync(tempDbPath)) {
-      fs.unlinkSync(tempDbPath);
-    }
-    if (fs.existsSync(`${tempDbPath}-wal`)) {
-      fs.unlinkSync(`${tempDbPath}-wal`);
-    }
-    if (fs.existsSync(`${tempDbPath}-shm`)) {
-      fs.unlinkSync(`${tempDbPath}-shm`);
-    }
+    removeTempDb(tempDbPath);
   });
 
   it('should initialize sqlite with WAL mode and foreign_keys enabled', () => {

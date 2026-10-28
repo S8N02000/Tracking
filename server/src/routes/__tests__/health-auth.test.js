@@ -1,11 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
-import app from '../../app.js';
+import { makeTempDbPath } from '../../test-utils/tempDb.js';
+
+const adminSecret = 'test_secret';
+
+// Le secret d'administration est imposé AVANT l'import de `app.js` : le
+// middleware le lit au moment de la requête. Le test ne doit dépendre ni du
+// `.env` local ni du secret de production.
+process.env.ADMIN_SECRET = adminSecret;
+// Base temporaire : ce test ne touche pas la base de production.
+process.env.DB_PATH = makeTempDbPath('temp_health_auth_db.db');
+
+const { default: app } = await import('../../app.js');
 
 describe('Health and Auth Endpoints', () => {
-  beforeAll(() => {
-    process.env.ADMIN_SECRET = 'test_secret';
-  });
   it('GET /api/health should be publicly accessible without token', async () => {
     const res = await request(app).get('/api/health');
     expect(res.status).toBe(200);
@@ -29,7 +37,6 @@ describe('Health and Auth Endpoints', () => {
   });
 
   it('POST /api/auth/verify with valid token should return 200 { valid: true }', async () => {
-    const adminSecret = process.env.ADMIN_SECRET;
     const res = await request(app)
       .post('/api/auth/verify')
       .set('Authorization', `Bearer ${adminSecret}`);

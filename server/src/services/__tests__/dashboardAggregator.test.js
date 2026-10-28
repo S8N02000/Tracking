@@ -1,18 +1,15 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import fs from 'fs';
-import path from 'path';
 import { runMigrations } from '../../database/migrate.js';
 import { getDatabase, closeDatabase } from '../../database/db.js';
 import { getDailyDashboard } from '../dashboardAggregator.js';
+import { makeTempDbPath, removeTempDb } from '../../test-utils/tempDb.js';
 
 describe('Dashboard Aggregator Unit & Integration Tests', () => {
-  const tempDbPath = path.resolve(process.cwd(), 'temp_dashboard_db.db');
+  const tempDbPath = makeTempDbPath('temp_dashboard_db.db');
 
   afterEach(() => {
     closeDatabase();
-    if (fs.existsSync(tempDbPath)) fs.unlinkSync(tempDbPath);
-    if (fs.existsSync(`${tempDbPath}-wal`)) fs.unlinkSync(`${tempDbPath}-wal`);
-    if (fs.existsSync(`${tempDbPath}-shm`)) fs.unlinkSync(`${tempDbPath}-shm`);
+    removeTempDb(tempDbPath);
   });
 
   it('should aggregate meal_log, sport_log, body_scans, daily_targets into continuous matrix', () => {

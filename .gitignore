@@ -17,3 +17,7 @@ backup_reports/
 # Sauvegardes SQLite et artefacts de rollback
 *.db.bak*
 _rollback_backup/
+
+# Fixture de test Boditrax : versionnée malgre le *.csv global.
+# Un test qui depend d'un export utilisateur non versionne echoue en CI.
+!server/src/services/__tests__/fixtures/*.csv
