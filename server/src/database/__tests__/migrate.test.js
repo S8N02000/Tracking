@@ -3,7 +3,9 @@ import { runMigrations } from '../migrate.js';
 import { backupDatabase } from '../backup.js';
 import { getDatabase, closeDatabase } from '../db.js';
 import { makeTempDbPath, removeTempDb } from '../../test-utils/tempDb.js';
+import { SERVER_ROOT } from '../../config/env.js';
 import fs from 'fs';
+import path from 'path';
 
 describe('Database Migrations (migrate.js)', () => {
   const tempDbPath = makeTempDbPath('temp_migrate_db.db');
@@ -74,6 +76,43 @@ describe('Database Migrations (migrate.js)', () => {
       if (previousBackupDir === undefined) delete process.env.BACKUP_DIR;
       else process.env.BACKUP_DIR = previousBackupDir;
       fs.rmSync(backupDir, { recursive: true, force: true });
+    }
+  });
+
+  it('ne pollue pas le repertoire de sauvegardes de production avec une base temporaire', () => {
+    // `runMigrations(tempDbPath)` declenche une sauvegarde. Si elle atterrissait
+    // dans `backup_reports/`, le repertoire de production se remplirait de dumps
+    // vides de bases jetables (constate : 18 fichiers parasites sur 21).
+    //
+    // Attention : `backupDatabase` ne sauvegarde QUE si le fichier existe deja.
+    // Il faut donc creer la base temporaire en premier, sinon la migration
+    // initiale ne produit aucune sauvegarde et le test ne prouve rien.
+    runMigrations(tempDbPath);
+
+    const prodBackupDir = path.resolve(SERVER_ROOT, '..', 'backup_reports');
+    const previousBackupDir = process.env.BACKUP_DIR;
+    delete process.env.BACKUP_DIR;
+    try {
+      const before = fs.existsSync(prodBackupDir)
+        ? fs.readdirSync(prodBackupDir).filter((f) => f.startsWith('nutrition_backup_'))
+        : [];
+
+      // 2e migration : la base existe, la sauvegarde est donc reellement produite.
+      runMigrations(tempDbPath);
+
+      const after = fs.existsSync(prodBackupDir)
+        ? fs.readdirSync(prodBackupDir).filter((f) => f.startsWith('nutrition_backup_'))
+        : [];
+      expect(after.length).toBe(before.length);
+
+      // ... et elle a bien ete ecrite, mais hors du repertoire de production.
+      const localBackupDir = path.join(path.dirname(tempDbPath), 'backups');
+      expect(fs.existsSync(localBackupDir)).toBe(true);
+      expect(fs.readdirSync(localBackupDir).length).toBeGreaterThan(0);
+      fs.rmSync(localBackupDir, { recursive: true, force: true });
+    } finally {
+      if (previousBackupDir === undefined) delete process.env.BACKUP_DIR;
+      else process.env.BACKUP_DIR = previousBackupDir;
     }
   });
 });

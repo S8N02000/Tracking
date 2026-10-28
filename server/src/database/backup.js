@@ -29,9 +29,25 @@ export function backupDatabase(customDbPath = null) {
       return null;
     }
 
-    const backupDir = process.env.BACKUP_DIR
-      ? path.resolve(process.env.BACKUP_DIR)
-      : path.resolve(SERVER_ROOT, '..', 'backup_reports');
+    // Repertoire de destination.
+    //
+    // `BACKUP_DIR` (regle explicite) prime toujours.
+    // Sinon, une migration portant sur une AUTRE base que la base de
+    // production (tests, bases temporaires) ecrit a cote de cette base :
+    // ecrire dans le repertoire de production polluerait les sauvegardes
+    // reelles avec des dumps vides de bases jetables.
+    const productionDbPath = process.env.DB_PATH
+      ? path.resolve(SERVER_ROOT, process.env.DB_PATH)
+      : path.resolve(SERVER_ROOT, '../sqlite/nutrition.db');
+
+    let backupDir;
+    if (process.env.BACKUP_DIR) {
+      backupDir = path.resolve(process.env.BACKUP_DIR);
+    } else if (path.resolve(resolvedPath) !== productionDbPath) {
+      backupDir = path.join(path.dirname(resolvedPath), 'backups');
+    } else {
+      backupDir = path.resolve(SERVER_ROOT, '..', 'backup_reports');
+    }
 
     if (!fs.existsSync(backupDir)) {
       fs.mkdirSync(backupDir, { recursive: true });
