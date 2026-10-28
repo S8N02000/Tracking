@@ -5,6 +5,11 @@
 # ============================================================
 FROM node:22-alpine AS builder
 
+# La chaîne de compilation native est requise : si le téléchargement du
+# binaire précompilé de better-sqlite3 échoue (réseau), npm bascule sur
+# node-gyp, qui exige python3, make et g++.
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /build
 
 COPY package*.json ./

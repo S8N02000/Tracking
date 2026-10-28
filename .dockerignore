@@ -1,0 +1,41 @@
+# ============================================================
+# Contexte de build Docker — fichiers exclus
+# ============================================================
+
+# Dépendances installées dans l'image (npm install dans le Dockerfile)
+node_modules
+**/node_modules
+
+# Données de production : NE DOIVENT PAS entrer dans l'image.
+# La base SQLite est montée en volume à l'exécution.
+sqlite/
+*.db
+*.db-shm
+*.db-wal
+backups/
+backup_reports/
+**/backup_reports/
+
+# Secrets : le conteneur reçoit ses variables via env_file (.env.prod)
+.env
+.env.*
+!.env.example
+
+# Git et fichiers d'outils
+.git
+.gitignore
+.github
+.vscode
+.idea
+
+# Artefacts de build et logs
+client/dist/
+**/dist/
+*.log
+npm-debug.log*
+.DS_Store
+
+# Documentation et fichiers non nécessaires au runtime
+docs/
+*.md
+!README.md
