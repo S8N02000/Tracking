@@ -57,6 +57,8 @@ Le projet est structuré sous forme de monorepo léger Node.js :
 nutrition/
 ├── package.json               # Script racine (npm run dev, build, mcp, test:server)
 ├── HERMES_MCP_SETUP.md        # Guide de configuration MCP pour Hermes Agent
+├── docs/
+│   └── PRAL.md                # Moteur PRAL : formule, qualité des données, curations, API
 ├── client/                    # Frontend Vue 3 (SPA & PWA)
 │   ├── index.html
 │   ├── vite.config.js         # Configuration Vite & vite-plugin-pwa
