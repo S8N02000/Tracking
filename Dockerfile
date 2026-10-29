@@ -18,12 +18,12 @@ COPY client/package.json ./client/
 
 RUN npm install && \
     npm install -g \
-      better-sqlite3@11.8.1 \
-      express@4.21.2 \
-      cors@2.8.5 \
-      dotenv@16.4.7 \
-      helmet@8.0.0 \
-      multer@1.4.5-lts.1
+      better-sqlite3@11.10.0 \
+      express@4.22.3 \
+      cors@2.8.6 \
+      dotenv@16.6.1 \
+      helmet@8.3.0 \
+      multer@1.4.5-lts.2
 COPY . .
 
 RUN npm run build
@@ -40,12 +40,12 @@ RUN apk add --no-cache \
       g++ \
       sqlite-dev \
     && npm install -g \
-      better-sqlite3@11.8.1 \
-      express@4.21.2 \
-      cors@2.8.5 \
-      dotenv@16.4.7 \
-      helmet@8.0.0 \
-      multer@1.4.5-lts.1 \
+      better-sqlite3@11.10.0 \
+      express@4.22.3 \
+      cors@2.8.6 \
+      dotenv@16.6.1 \
+      helmet@8.3.0 \
+      multer@1.4.5-lts.2 \
     && mkdir -p /app/sqlite /app/log /app/stock /app/sport
 
 WORKDIR /app
