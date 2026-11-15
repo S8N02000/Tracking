@@ -35,7 +35,7 @@
 
       <div v-if="boditraxStore.uploading" class="text-xs text-cyan-400 font-mono flex items-center justify-center gap-2">
         <span class="animate-spin rounded-full h-4 w-4 border-b-2 border-cyan-400"></span>
-        Importation et vérification de l'idempotence SQLite en cours...
+        Importation et analyse biométrique en cours...
       </div>
 
       <div v-if="boditraxStore.uploadResult" class="text-xs text-emerald-400 font-mono font-semibold">

@@ -52,5 +52,14 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-charts': ['chart.js', 'vue-chartjs']
+        }
+      }
+    }
   }
 });
