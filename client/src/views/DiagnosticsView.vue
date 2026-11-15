@@ -1145,7 +1145,7 @@ const exportMarkdown = () => {
         md += `## 💊 Vitamines\n`;
         md += `| Vitamine | Apport | Cible | % VNR |\n`;
         md += `|---|---|---|---|\n`;
-        md += `| A | ${t.vit_a_mcg}µg | 750µg | ${Math.round((t.vit_a_mcg / 750) * 100)}% |\n`;
+        md += `| A (activité rétinol) | ${t.vit_a_mcg}µg | 750µg | ${Math.round((t.vit_a_mcg / 750) * 100)}% |\n`;
         md += `| B1 | ${t.vit_b1_mg}mg | 1.2mg | ${Math.round((t.vit_b1_mg / 1.2) * 100)}% |\n`;
         md += `| B2 | ${t.vit_b2_mg}mg | 1.6mg | ${Math.round((t.vit_b2_mg / 1.6) * 100)}% |\n`;
         md += `| B3 | ${t.vit_b3_mg}mg | 16mg | ${Math.round((t.vit_b3_mg / 16) * 100)}% |\n`;

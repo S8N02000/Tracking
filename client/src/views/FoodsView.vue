@@ -353,7 +353,7 @@
 
           <!-- TAB 4: VITAMINS -->
           <div v-show="activeTab === 'vitamins'" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div><label class="block text-slate-400 mb-1">Vitamine A (µg)</label><input v-model.number="foodForm.vit_a_mcg_100g" type="number" step="1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
+            <div><label class="block text-slate-400 mb-1">Vitamine A (µg RAE)</label><input v-model.number="foodForm.vit_a_mcg_100g" type="number" step="1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
             <div><label class="block text-slate-400 mb-1">Vitamine D (µg)</label><input v-model.number="foodForm.vit_d_mcg_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
             <div><label class="block text-slate-400 mb-1">Vitamine E (mg)</label><input v-model.number="foodForm.vit_e_mg_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
             <div><label class="block text-slate-400 mb-1">Vitamine K (µg)</label><input v-model.number="foodForm.vit_k_mcg_100g" type="number" step="0.1" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm font-mono" /></div>
@@ -438,7 +438,7 @@
         <div v-if="selectedNutrientFood.vit_a_mcg_100g || selectedNutrientFood.vit_d_mcg_100g || selectedNutrientFood.vit_e_mg_100g || selectedNutrientFood.vit_k_mcg_100g || selectedNutrientFood.vit_c_mg_100g || selectedNutrientFood.vit_b1_mg_100g || selectedNutrientFood.vit_b2_mg_100g || selectedNutrientFood.vit_b3_mg_100g || selectedNutrientFood.vit_b5_mg_100g || selectedNutrientFood.vit_b6_mg_100g || selectedNutrientFood.vit_b9_mcg_100g || selectedNutrientFood.vit_b12_mcg_100g">
           <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Vitamines</h4>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs font-mono">
-            <div v-if="selectedNutrientFood.vit_a_mcg_100g"><span class="text-slate-400">Vit A</span> <span class="text-orange-300">{{ selectedNutrientFood.vit_a_mcg_100g }}µg</span></div>
+            <div v-if="selectedNutrientFood.vit_a_mcg_100g"><span class="text-slate-400">Vit A (RAE)</span> <span class="text-orange-300">{{ selectedNutrientFood.vit_a_mcg_100g }}µg</span></div>
             <div v-if="selectedNutrientFood.vit_d_mcg_100g"><span class="text-slate-400">Vit D</span> <span class="text-yellow-300">{{ selectedNutrientFood.vit_d_mcg_100g }}µg</span></div>
             <div v-if="selectedNutrientFood.vit_e_mg_100g"><span class="text-slate-400">Vit E</span> <span class="text-green-400">{{ selectedNutrientFood.vit_e_mg_100g }}mg</span></div>
             <div v-if="selectedNutrientFood.vit_k_mcg_100g"><span class="text-slate-400">Vit K</span> <span class="text-pink-400">{{ selectedNutrientFood.vit_k_mcg_100g }}µg</span></div>

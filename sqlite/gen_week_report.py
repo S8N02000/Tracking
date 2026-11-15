@@ -54,7 +54,7 @@ API = "http://localhost:3001"
 OUT_DIR = Path("/data/nutrition/backup_reports")
 
 VITAMINS = [
-    ("A (rétinol)", "vit_a_mcg", "µg"),
+    ("A (activité rétinol)", "vit_a_mcg", "µg"),
     ("C", "vit_c_mg", "mg"),
     ("D", "vit_d_mcg", "µg"),
     ("E", "vit_e_mg", "mg"),

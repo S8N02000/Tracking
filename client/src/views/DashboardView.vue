@@ -537,7 +537,7 @@
                     <button class="w-4 h-4 rounded-full bg-slate-700 text-slate-400 text-[9px] font-bold leading-none flex items-center justify-center hover:bg-cyan-500 hover:text-slate-950 transition" @click.stop="toggleTooltip('vitA')">i</button>
                   </span>
                   <div v-if="activeTooltip === 'vitA'" class="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-600 px-2.5 py-1.5 text-[10px] text-slate-200 shadow-xl pointer-events-none">
-                    <div class="font-bold text-cyan-400 mb-0.5">Vitamine A</div>Vue, peau. VNR 800µg.
+                    <div class="font-bold text-cyan-400 mb-0.5">Vitamine A</div>Vue, peau (activité rétinol). VNR 750µg.
                     <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-slate-800 border-l border-t border-slate-600 rotate-45"></div>
                   </div>
                 </th>

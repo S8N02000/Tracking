@@ -79,7 +79,7 @@ def get_nutrients(date):
 
 VNR = [('Ca','Calcium','mg',800),('Fe','Fer','mg',14),('Mg','Magnesium','mg',375),
        ('K','Potassium','mg',2000),('Zn','Zinc','mg',10),('P_','Phosphore','mg',700),
-       ('A','Vit A','ug',800),('B1','Vit B1','mg',1.1),('B2','Vit B2','mg',1.4),
+       ('A','Vit A (RAE)','ug',750),('B1','Vit B1','mg',1.1),('B2','Vit B2','mg',1.4),
        ('B3','Vit B3','mg',16),('B5','Vit B5','mg',6),('B6','Vit B6','mg',1.4),
        ('B9','Vit B9','ug',200),('B12','Vit B12','ug',2.5),('C','Vit C','mg',80),
        ('D','Vit D','ug',5),('E','Vit E','mg',12)]

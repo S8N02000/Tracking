@@ -18,7 +18,7 @@ VNR = {
     'carbohydrates_g': 200,
     'fat_g': 70,
     'fiber_g': 30,
-    'vit_a_mcg': 800,
+    'vit_a_mcg': 750,
     'vit_c_mg': 80,
     'vit_d_mcg': 5,
     'vit_e_mg': 12,
@@ -369,7 +369,7 @@ def generate_report(start_date, end_date, conn):
     # Vitamines
     vit_keys = ['vit_a_mcg','vit_c_mg','vit_d_mcg','vit_e_mg','vit_k_mcg',
                 'vit_b1_mg','vit_b2_mg','vit_b3_mg','vit_b5_mg','vit_b6_mg','vit_b9_mcg','vit_b12_mcg']
-    vit_names = {'vit_a_mcg':'A (rétinol)','vit_c_mg':'C','vit_d_mcg':'D','vit_e_mg':'E','vit_k_mcg':'K',
+    vit_names = {'vit_a_mcg':'A (activité rétinol)','vit_c_mg':'C','vit_d_mcg':'D','vit_e_mg':'E','vit_k_mcg':'K',
                  'vit_b1_mg':'B1 (thiamine)','vit_b2_mg':'B2 (riboflavine)','vit_b3_mg':'B3 (niacine)',
                  'vit_b5_mg':'B5','vit_b6_mg':'B6','vit_b9_mcg':'B9 (folates)','vit_b12_mcg':'B12'}
     vit_unit = {k:'µg' if 'mcg' in k else 'mg' for k in vit_keys}

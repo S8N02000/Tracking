@@ -521,7 +521,7 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
     },
     {
       id: 'vit_a',
-      name: 'Vitamine A (Rétinol & Bêta-carotène)',
+      name: 'Vitamine A (activité rétinol)',
       category: 'Vitamines',
       unit: 'mcg',
       avg_intake: avgVitA,

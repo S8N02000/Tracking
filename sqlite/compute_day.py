@@ -30,7 +30,7 @@ DEFAULT_TARGETS = dict(
     fiber_g=30,
     calcium_mg=1000, iron_mg=11, magnesium_mg=400,
     potassium_mg=4700, zinc_mg=11, phosphorus_mg=700,
-    vit_a_mcg=700, vit_b1_mg=1.1, vit_b2_mg=1.3,
+    vit_a_mcg=750, vit_b1_mg=1.1, vit_b2_mg=1.3,
     vit_b3_mg=15, vit_b6_mg=1.5, vit_b9_mcg=330,
     vit_b12_mcg=2.4, vit_c_mg=80, vit_d_mcg=15, vit_e_mg=12,
 )
@@ -476,7 +476,7 @@ def build_report(date_str: str, targets: dict, verbose: bool = False) -> str:
     # ── VITAMINES ─────────────────────────────────────────────────────────
     lines.append("   Vitamines:")
     vitamins = [
-        ("A", totals.get("vit_a_mcg", 0),    t["vit_a_mcg"],    "μg"),
+        ("A (RAE)", totals.get("vit_a_mcg", 0), t["vit_a_mcg"], "μg"),
         ("B1",  totals.get("vit_b1_mg", 0),   t["vit_b1_mg"],    "mg"),
         ("B2",  totals.get("vit_b2_mg", 0),   t["vit_b2_mg"],    "mg"),
         ("B3",  totals.get("vit_b3_mg", 0),   t["vit_b3_mg"],    "mg"),
