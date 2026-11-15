@@ -815,64 +815,194 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
   });
 
   // --- CLINICAL RATIOS & BIOMARKERS ---
-  const omegaRatioVal = avgOmega3 > 0 ? Math.round((avgOmega6 / avgOmega3) * 10) / 10 : 99;
-  let omegaRatioStatus = 'OPTIMAL';
+  let omegaRatioVal = null;
+  let omegaRatioStatus = 'INDETERMINE';
   let omegaIsProblem = false;
-  if (omegaRatioVal > 8) {
+  if (avgOmega3 > 0) {
+    omegaRatioVal = Math.round((avgOmega6 / avgOmega3) * 10) / 10;
+    if (omegaRatioVal > 8.0) {
+      omegaRatioStatus = 'CRITIQUE';
+      omegaIsProblem = true;
+    } else if (omegaRatioVal > 4.0) {
+      omegaRatioStatus = 'ATTENTION';
+      omegaIsProblem = true;
+    } else {
+      omegaRatioStatus = 'OPTIMAL';
+    }
+  } else if (avgOmega6 > 0) {
+    // Oméga-6 consommé sans aucun Oméga-3 : déséquilibre critique
+    omegaRatioVal = null;
     omegaRatioStatus = 'CRITIQUE';
     omegaIsProblem = true;
-  } else if (omegaRatioVal > 4.5) {
-    omegaRatioStatus = 'ATTENTION';
-    omegaIsProblem = true;
   }
 
-  const potSodRatioVal = avgSodium > 0 ? Math.round((avgPotassium / avgSodium) * 100) / 100 : 2.5;
-  let potSodStatus = 'OPTIMAL';
+  let potSodRatioVal = null;
+  let potSodStatus = 'INDETERMINE';
   let potSodProblem = false;
-  if (potSodRatioVal < 1.0) {
-    potSodStatus = 'CRITIQUE';
-    potSodProblem = true;
-  } else if (potSodRatioVal < 1.5) {
-    potSodStatus = 'SOUS_OPTIMAL';
-    potSodProblem = true;
+  if (avgSodium > 0) {
+    potSodRatioVal = Math.round((avgPotassium / avgSodium) * 100) / 100;
+    if (potSodRatioVal < 1.0) {
+      potSodStatus = 'CRITIQUE';
+      potSodProblem = true;
+    } else if (potSodRatioVal < 1.7) {
+      potSodStatus = 'SOUS_OPTIMAL';
+      potSodProblem = true;
+    } else {
+      potSodStatus = 'OPTIMAL';
+    }
+  } else if (avgPotassium > 0) {
+    // Apport potassique sans sel/sodium excessif
+    potSodRatioVal = null;
+    potSodStatus = 'OPTIMAL';
   }
 
-  const caMgRatioVal = avgMagnesium > 0 ? Math.round((avgCalcium / avgMagnesium) * 10) / 10 : 2.5;
-  let caMgStatus = 'OPTIMAL';
+  let caMgRatioVal = null;
+  let caMgStatus = 'INDETERMINE';
   let caMgProblem = false;
-  if (caMgRatioVal < 1.4 || caMgRatioVal > 2.5) {
-    caMgStatus = 'ATTENTION';
-    caMgProblem = true;
+  if (avgMagnesium > 0) {
+    caMgRatioVal = Math.round((avgCalcium / avgMagnesium) * 10) / 10;
+    if (caMgRatioVal < 1.5 || caMgRatioVal > 2.2) {
+      caMgStatus = 'ATTENTION';
+      caMgProblem = true;
+    } else {
+      caMgStatus = 'OPTIMAL';
+    }
   }
 
-  const znCuRatioVal = avgCopper > 0 ? Math.round((avgZinc / avgCopper) * 10) / 10 : 10;
-  let znCuStatus = 'OPTIMAL';
+  let znCuRatioVal = null;
+  let znCuStatus = 'INDETERMINE';
   let znCuProblem = false;
-  if (znCuRatioVal < 7.0 || znCuRatioVal > 16.0) {
-    znCuStatus = 'ATTENTION';
-    znCuProblem = true;
+  if (avgCopper > 0) {
+    znCuRatioVal = Math.round((avgZinc / avgCopper) * 10) / 10;
+    if (znCuRatioVal < 8.0 || znCuRatioVal > 15.0) {
+      znCuStatus = 'ATTENTION';
+      znCuProblem = true;
+    } else {
+      znCuStatus = 'OPTIMAL';
+    }
   }
 
-  const fiberDensityVal = avgKcal > 0 ? Math.round((avgFiber / avgKcal) * 1000 * 10) / 10 : 0;
-  let fiberDensityStatus = 'OPTIMAL';
+  let fiberDensityVal = null;
+  let fiberDensityStatus = 'INDETERMINE';
   let fiberDensityProblem = false;
-  if (fiberDensityVal < 10.0) {
-    fiberDensityStatus = 'CRITIQUE';
-    fiberDensityProblem = true;
-  } else if (fiberDensityVal < 14.0) {
-    fiberDensityStatus = 'SOUS_OPTIMAL';
-    fiberDensityProblem = true;
+  if (avgKcal > 0) {
+    fiberDensityVal = Math.round((avgFiber / avgKcal) * 1000 * 10) / 10;
+    if (fiberDensityVal < 10.0) {
+      fiberDensityStatus = 'CRITIQUE';
+      fiberDensityProblem = true;
+    } else if (fiberDensityVal < 14.0) {
+      fiberDensityStatus = 'SOUS_OPTIMAL';
+      fiberDensityProblem = true;
+    } else {
+      fiberDensityStatus = 'OPTIMAL';
+    }
   }
 
-  const satFatShareVal = avgFat > 0 ? Math.round((avgSatFat / avgFat) * 100) : 0;
-  let satFatStatus = 'OPTIMAL';
+  let satFatShareVal = null;
+  let satFatStatus = 'INDETERMINE';
   let satFatProblem = false;
-  if (satFatShareVal > 38) {
-    satFatStatus = 'CRITIQUE';
-    satFatProblem = true;
-  } else if (satFatShareVal > 33) {
-    satFatStatus = 'ATTENTION';
-    satFatProblem = true;
+  if (avgFat > 0) {
+    satFatShareVal = Math.round((avgSatFat / avgFat) * 100);
+    if (satFatShareVal > 38) {
+      satFatStatus = 'CRITIQUE';
+      satFatProblem = true;
+    } else if (satFatShareVal > 33) {
+      satFatStatus = 'ATTENTION';
+      satFatProblem = true;
+    } else {
+      satFatStatus = 'OPTIMAL';
+    }
+  } else if (days > 0) {
+    satFatShareVal = 0;
+    satFatStatus = 'OPTIMAL';
+  }
+
+  // --- NOUVEAUX RATIOS CLINIQUES RECOMMANDÉS (AUDIT MEDICAL) ---
+  // 1. Ratio Glucides / Fibres (Harvard Carb-to-Fiber Rule)
+  let carbFiberRatioVal = null;
+  let carbFiberStatus = 'INDETERMINE';
+  let carbFiberProblem = false;
+  if (avgFiber > 0) {
+    carbFiberRatioVal = Math.round((avgCarbs / avgFiber) * 10) / 10;
+    if (carbFiberRatioVal <= 10.0) {
+      carbFiberStatus = 'OPTIMAL';
+    } else if (carbFiberRatioVal <= 15.0) {
+      carbFiberStatus = 'SOUS_OPTIMAL';
+      carbFiberProblem = true;
+    } else {
+      carbFiberStatus = 'CRITIQUE';
+      carbFiberProblem = true;
+    }
+  } else if (avgCarbs > 0) {
+    // Glucides consommés sans aucune fibre : pic glycémique et absorption rapide
+    carbFiberRatioVal = null;
+    carbFiberStatus = 'CRITIQUE';
+    carbFiberProblem = true;
+  }
+
+  // 2. Ratio Calcium / Phosphore (Ca/P)
+  let caPRatioVal = null;
+  let caPStatus = 'INDETERMINE';
+  let caPProblem = false;
+  if (avgPhosphorus > 0) {
+    caPRatioVal = Math.round((avgCalcium / avgPhosphorus) * 100) / 100;
+    if (caPRatioVal >= 1.0 && caPRatioVal <= 1.5) {
+      caPStatus = 'OPTIMAL';
+    } else if ((caPRatioVal >= 0.8 && caPRatioVal < 1.0) || caPRatioVal > 1.5) {
+      caPStatus = 'ATTENTION';
+      caPProblem = true;
+    } else {
+      caPStatus = 'CRITIQUE';
+      caPProblem = true;
+    }
+  }
+
+  // 3. Densité Protéique Pondérale (g/kg via Boditrax)
+  const weightScan = db.prepare(`
+    SELECT weight_kg FROM body_scans
+    WHERE weight_kg IS NOT NULL AND weight_kg > 0
+    ORDER BY CASE WHEN scan_date BETWEEN ? AND ? THEN 0 ELSE 1 END, scan_datetime DESC
+    LIMIT 1
+  `).get(startDateStr, endDateStr);
+  const userWeightKg = weightScan?.weight_kg || null;
+
+  let protWeightVal = null;
+  let protWeightStatus = 'INDETERMINE';
+  let protWeightProblem = false;
+  if (userWeightKg && userWeightKg > 0) {
+    protWeightVal = Math.round((avgProteins / userWeightKg) * 100) / 100;
+    if (protWeightVal >= 1.2 && protWeightVal <= 2.2) {
+      protWeightStatus = 'OPTIMAL';
+    } else if (protWeightVal >= 0.8 && protWeightVal < 1.2) {
+      protWeightStatus = 'SOUS_OPTIMAL';
+      protWeightProblem = true;
+    } else if (protWeightVal < 0.8) {
+      protWeightStatus = 'CRITIQUE';
+      protWeightProblem = true;
+    } else {
+      protWeightStatus = 'ATTENTION';
+      protWeightProblem = true;
+    }
+  }
+
+  // 4. Index Lipidique P/S (Poly-insaturés / Saturés)
+  let psIndexVal = null;
+  let psIndexStatus = 'INDETERMINE';
+  let psIndexProblem = false;
+  if (avgSatFat > 0) {
+    psIndexVal = Math.round((avgPolyFat / avgSatFat) * 100) / 100;
+    if (psIndexVal >= 1.0) {
+      psIndexStatus = 'OPTIMAL';
+    } else if (psIndexVal >= 0.4) {
+      psIndexStatus = 'ATTENTION';
+      psIndexProblem = true;
+    } else {
+      psIndexStatus = 'CRITIQUE';
+      psIndexProblem = true;
+    }
+  } else if (avgPolyFat > 0) {
+    psIndexVal = null;
+    psIndexStatus = 'OPTIMAL';
   }
 
   // PRAL : calcul délégué au service PRAL (domaine pur + frontière SQL).
@@ -881,12 +1011,18 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
   // dénominateur et les seuils ne sont plus calculés ici.
   const pralRatio = getPralRatio(startDateStr, endDateStr, db);
 
-  const totalMacroKcal = (avgProteins * 4) + (avgCarbs * 4) + (avgFat * 9) || 1;
-  const macroSplit = {
-    protein_pct: Math.round(((avgProteins * 4) / totalMacroKcal) * 100),
-    carbs_pct: Math.round(((avgCarbs * 4) / totalMacroKcal) * 100),
-    fat_pct: Math.round(((avgFat * 9) / totalMacroKcal) * 100)
-  };
+  const totalMacroKcal = (avgProteins * 4) + (avgCarbs * 4) + (avgFat * 9);
+  let macroSplit = { protein_pct: 0, carbs_pct: 0, fat_pct: 0 };
+  if (totalMacroKcal > 0) {
+    const pPct = Math.round(((avgProteins * 4) / totalMacroKcal) * 100);
+    const cPct = Math.round(((avgCarbs * 4) / totalMacroKcal) * 100);
+    const fPct = Math.max(0, 100 - pPct - cPct);
+    macroSplit = {
+      protein_pct: pPct,
+      carbs_pct: cPct,
+      fat_pct: fPct
+    };
+  }
 
   const ratios = [
     {
@@ -904,10 +1040,20 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
       label: 'Ratio Potassium / Sodium',
       value: potSodRatioVal,
       unit: ': 1',
-      target_label: 'Cible >= 1.5 : 1',
+      target_label: 'Cible >= 1.7 : 1',
       status: potSodStatus,
       is_problem: potSodProblem,
-      explanation: 'Un ratio inférieur à 1.0 favorise l’hypertension artérielle. Diminuez les produits industriels salés et consommez plus de bananes, patates douces et légumes verts.'
+      explanation: 'Un ratio massique inférieur à 1.7 (équivalent au ratio molaire 1:1 de l’OMS) favorise l’hypertension artérielle. Diminuez les produits salés et consommez plus de végétaux riches en potassium.'
+    },
+    {
+      id: 'ratio_glucides_fibres',
+      label: 'Ratio Glucides / Fibres',
+      value: carbFiberRatioVal,
+      unit: ': 1',
+      target_label: 'Cible <= 10.0 : 1',
+      status: carbFiberStatus,
+      is_problem: carbFiberProblem,
+      explanation: 'Règle 10:1 de Harvard (Index de qualité glucidique). Un ratio <= 10 garantit des glucides non raffinés, stabilise la glycémie et améliore la sensibilité à l’insuline.'
     },
     {
       id: 'ratio_calcium_magnesium',
@@ -918,6 +1064,16 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
       status: caMgStatus,
       is_problem: caMgProblem,
       explanation: 'Le magnésium est la clé de la biodisponibilité du calcium. Un déséquilibre impacte le système musculaire et nerveux.'
+    },
+    {
+      id: 'ratio_calcium_phosphore',
+      label: 'Ratio Calcium / Phosphore',
+      value: caPRatioVal,
+      unit: ': 1',
+      target_label: 'Cible 1.0 - 1.5 : 1',
+      status: caPStatus,
+      is_problem: caPProblem,
+      explanation: 'Régulateur clé de la matrice osseuse. Un excès de phosphore (< 1.0) stimule la parathormone (PTH) et favorise la déminéralisation osseuse.'
     },
     {
       id: 'ratio_zinc_cuivre',
@@ -949,14 +1105,34 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
       is_problem: satFatProblem,
       explanation: 'Un excès d’acides gras saturés (>33% des lipides totaux) élève le LDL-cholestérol sanguin.'
     },
+    {
+      id: 'index_lipidique_ps',
+      label: 'Index Lipidique P/S (Poly / Sat)',
+      value: psIndexVal,
+      unit: ': 1',
+      target_label: 'Cible >= 1.0 : 1',
+      status: psIndexStatus,
+      is_problem: psIndexProblem,
+      explanation: 'Rapport cardiométabolique de substitution lipidique. Un index >= 1.0 favorise la modulation à la baisse du LDL-cholestérol athérogène.'
+    },
+    {
+      id: 'densite_proteique_ponderale',
+      label: 'Densité Protéique Pondérale',
+      value: protWeightVal,
+      unit: 'g / kg',
+      target_label: 'Cible 1.2 - 1.8 g / kg',
+      status: protWeightStatus,
+      is_problem: protWeightProblem,
+      explanation: userWeightKg ? `Apport rapporté au poids corporel (${userWeightKg} kg, dernier scan Boditrax). Préserve la masse musculaire active et prévient la sarcopénie.` : 'Poids non renseigné via scan Boditrax.'
+    },
     pralRatio
   ];
 
-  // Weighted Compliance Score
+  // Weighted Compliance Score (seuls les items déterminables sont comptabilisés)
   const allEvaluatedItems = [
     ...processedNutrients.map(n => n.status),
     ...ratios.map(r => r.status)
-  ];
+  ].filter(s => s !== 'INDETERMINE' && s !== 'NON_EVALUABLE');
 
   let totalScorePoints = 0;
   for (const s of allEvaluatedItems) {
@@ -970,7 +1146,9 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
     }
   }
 
-  const globalComplianceScore = Math.round((totalScorePoints / allEvaluatedItems.length) * 100);
+  const globalComplianceScore = allEvaluatedItems.length > 0
+    ? Math.round((totalScorePoints / allEvaluatedItems.length) * 100)
+    : 100;
   const totalProblemsCount = processedNutrients.filter(n => n.is_problem).length + ratios.filter(r => r.is_problem).length;
 
   // Daily Meals & Sports Breakdown for Day-by-Day Report Export

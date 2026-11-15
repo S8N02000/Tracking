@@ -19,14 +19,14 @@
       </div>
 
       <!-- Action Buttons & Date Filter Controls -->
-      <div class="flex flex-wrap items-center gap-2">
-        <!-- Preset Timeframes -->
-        <div class="flex items-center space-x-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+      <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5">
+        <!-- Preset Timeframes (Scrollable on small mobile) -->
+        <div class="flex items-center space-x-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 overflow-x-auto max-w-full no-scrollbar">
           <button
             v-for="preset in presets"
             :key="preset.id"
             @click="selectPreset(preset.id)"
-            class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+            class="px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all shrink-0"
             :class="selectedPreset === preset.id ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800'"
           >
             {{ preset.label }}
@@ -34,7 +34,7 @@
         </div>
 
         <!-- Sliding Window Controls -->
-        <div class="flex items-center space-x-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+        <div class="flex items-center space-x-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 self-start sm:self-auto">
           <button
             @click="shiftPeriod(-1)"
             class="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition"
@@ -86,40 +86,43 @@
           </div>
         </div>
 
-        <!-- Toggle: TOUT LES MACRO -->
+        <!-- Toggle: TOUS LES NUTRIMENTS -->
         <button
           @click="showAllMacros = !showAllMacros"
-          class="flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition border"
+          class="flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border"
           :class="showAllMacros ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-lg shadow-amber-500/10' : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'"
-          title="Activer ou désactiver l'affichage complet de tous les macronutriments et micronutriments"
+          title="Afficher tous les 35 nutriments ou uniquement les 14 principaux"
         >
-          <Sparkles class="w-4 h-4 text-amber-400" />
-          <span>{{ showAllMacros ? 'TOUT les macro : OUI' : 'TOUT les macro : NON' }}</span>
+          <Sparkles class="w-3.5 h-3.5 text-amber-400" />
+          <span>{{ showAllMacros ? 'Tous les nutriments (35)' : 'Vue Essentielle (14)' }}</span>
         </button>
 
-        <!-- Export Markdown Button -->
-        <button
-          @click="exportMarkdown"
-          :disabled="isGeneratingMd"
-          class="flex items-center space-x-2 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-400 font-bold text-xs border border-cyan-500/30 transition shadow-md disabled:opacity-50"
-          title="Télécharger le rapport au format Markdown (.md)"
-        >
-          <FileCode v-if="!isGeneratingMd" class="w-4 h-4" />
-          <Loader2 v-else class="w-4 h-4 animate-spin" />
-          <span>{{ isGeneratingMd ? 'Génération MD...' : 'Export Markdown' }}</span>
-        </button>
+        <!-- Actions Exports Buttons Group -->
+        <div class="flex items-center gap-2">
+          <!-- Export Markdown Button -->
+          <button
+            @click="exportMarkdown"
+            :disabled="isGeneratingMd"
+            class="flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-400 font-semibold text-xs border border-cyan-500/30 transition shadow-md disabled:opacity-50"
+            title="Télécharger le rapport au format Markdown (.md)"
+          >
+            <FileCode v-if="!isGeneratingMd" class="w-3.5 h-3.5" />
+            <Loader2 v-else class="w-3.5 h-3.5 animate-spin" />
+            <span>{{ isGeneratingMd ? 'Génération...' : 'Export Markdown' }}</span>
+          </button>
 
-        <!-- Export PDF Button -->
-        <button
-          @click="exportPDF"
-          :disabled="isGeneratingPdf"
-          class="flex items-center space-x-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-cyan-500/20 disabled:opacity-50"
-          title="Générer un PDF léger économe en encre (fond blanc)"
-        >
-          <FileText v-if="!isGeneratingPdf" class="w-4 h-4" />
-          <Loader2 v-else class="w-4 h-4 animate-spin" />
-          <span>{{ isGeneratingPdf ? 'Génération PDF...' : 'Télécharger PDF' }}</span>
-        </button>
+          <!-- Export PDF Button -->
+          <button
+            @click="exportPDF"
+            :disabled="isGeneratingPdf"
+            class="flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-cyan-500/20 disabled:opacity-50"
+            title="Générer un PDF médical léger économe en encre (fond blanc)"
+          >
+            <FileText v-if="!isGeneratingPdf" class="w-3.5 h-3.5" />
+            <Loader2 v-else class="w-3.5 h-3.5 animate-spin" />
+            <span>{{ isGeneratingPdf ? 'Génération...' : 'Télécharger PDF' }}</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -139,7 +142,7 @@
           <div>
             <span class="text-xs font-mono text-slate-400 uppercase tracking-wider block mb-1">Score de Conformité</span>
             <div class="flex items-baseline space-x-2">
-              <span class="text-3xl font-black" :class="scoreColorClass(diagnostics.summary.global_score_pct)">
+              <span class="text-3xl font-black font-mono tabular-nums" :class="scoreColorClass(diagnostics.summary.global_score_pct)">
                 {{ diagnostics.summary.global_score_pct }}%
               </span>
               <span class="text-xs text-slate-400">/ 100</span>
@@ -158,13 +161,13 @@
           <div>
             <span class="text-xs font-mono text-slate-400 uppercase tracking-wider block mb-1">Anomalies Décelées</span>
             <div class="flex items-baseline space-x-2">
-              <span class="text-3xl font-black" :class="diagnostics.summary.total_problems > 0 ? 'text-rose-400' : 'text-emerald-400'">
+              <span class="text-3xl font-black font-mono tabular-nums" :class="diagnostics.summary.total_problems > 0 ? 'text-rose-400' : 'text-emerald-400'">
                 {{ diagnostics.summary.total_problems }}
               </span>
               <span class="text-xs text-slate-400">anomalies</span>
             </div>
             <p class="text-[11px] text-slate-400 mt-1">
-              {{ diagnostics.summary.deficit_count }} carences, {{ diagnostics.summary.excess_count }} excès
+              {{ diagnostics.summary.deficit_count }} carences, {{ diagnostics.summary.excess_count }} excès<template v-if="diagnostics.summary.total_problems - (diagnostics.summary.deficit_count + diagnostics.summary.excess_count) > 0">, {{ diagnostics.summary.total_problems - (diagnostics.summary.deficit_count + diagnostics.summary.excess_count) }} ratios hors cible</template>
             </p>
           </div>
           <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
@@ -245,8 +248,8 @@
             </div>
 
             <div class="flex items-baseline space-x-2 my-2">
-              <span class="text-2xl font-black font-mono text-white">{{ ratio.value }}</span>
-              <span class="text-xs text-slate-400">{{ ratio.unit }}</span>
+              <span class="text-2xl font-black font-mono text-white">{{ ratio.value != null ? ratio.value : '—' }}</span>
+              <span class="text-xs text-slate-400">{{ ratio.value != null ? ratio.unit : '' }}</span>
             </div>
 
             <p class="text-xs text-slate-400 leading-relaxed border-t border-slate-800/80 pt-2 mt-2">
@@ -642,12 +645,12 @@
             <tbody>
               <tr v-for="r in diagnostics.ratios" :key="r.id" style="border-bottom: 1px solid #e2e8f0;">
                 <td style="padding: 4px 6px; border: 1px solid #cbd5e1; font-weight: bold;">{{ r.label }}</td>
-                <td style="padding: 4px 6px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace; font-weight: bold;">{{ r.value }} {{ r.unit }}</td>
+                <td style="padding: 4px 6px; border: 1px solid #cbd5e1; text-align: center; font-family: monospace; font-weight: bold;">{{ r.value != null ? r.value : '—' }} {{ r.value != null ? r.unit : '' }}</td>
                 <td style="padding: 4px 6px; border: 1px solid #cbd5e1; color: #475569;">{{ r.target_label }}</td>
                 <td style="padding: 4px 6px; border: 1px solid #cbd5e1; text-align: center;">
                   <span
                     style="padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: bold;"
-                    :style="r.status === 'OPTIMAL' ? 'background-color: #dcfce7; color: #166534;' : r.status === 'ATTENTION' || r.status === 'SOUS_OPTIMAL' ? 'background-color: #fef3c7; color: #92400e;' : 'background-color: #ffe4e6; color: #9f1239;'"
+                    :style="r.status === 'OPTIMAL' ? 'background-color: #dcfce7; color: #166534;' : r.status === 'ATTENTION' || r.status === 'SOUS_OPTIMAL' ? 'background-color: #fef3c7; color: #92400e;' : r.status === 'INDETERMINE' || r.status === 'NON_EVALUABLE' ? 'background-color: #f1f5f9; color: #475569;' : 'background-color: #ffe4e6; color: #9f1239;'"
                   >
                     {{ formatStatusLabel(r.status) }}
                   </span>
@@ -740,7 +743,7 @@
         <!-- Full Micronutrients Breakdown Table if showAllMacros is true -->
         <div v-if="showAllMacros" style="margin-bottom: 16px; page-break-inside: avoid; break-inside: avoid;">
           <h2 style="font-size: 13px; font-weight: 800; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-bottom: 8px;">
-            💊 APPORTS EN VITAMINES, MINÉRAUX & MACRO-NUTRIMENTS (TOUT LES MACRO)
+            💊 APPORTS EN VITAMINES, MINÉRAUX & MACRO-NUTRIMENTS (TOUS LES NUTRIMENTS)
           </h2>
           <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
             <thead>
@@ -788,7 +791,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import api from '@/api/client.js';
-import html2pdf from 'html2pdf.js';
 import {
   Stethoscope, Calendar, Activity, ShieldCheck, AlertTriangle, AlertOctagon,
   Scale, Zap, Search, CheckCircle2, FileText, Loader2, Utensils,
@@ -997,6 +999,8 @@ const exportPDF = async () => {
   };
 
   try {
+    const html2pdfModule = await import('html2pdf.js');
+    const html2pdf = html2pdfModule.default || html2pdfModule;
     await html2pdf().set(opt).from(templateEl).save();
   } catch (err) {
     console.error('Erreur lors de la génération PDF html2pdf:', err);
@@ -1195,7 +1199,7 @@ const exportMarkdown = () => {
 
     // 3. Totaux complets de la période (les 40 nutriments demandés)
     md += `# 📊 TOTAUX DE LA PÉRIODE (${diagnostics.value.summary.total_days} jours)\n\n`;
-    md += `## 💊 APPORTS EN VITAMINES, MINÉRAUX & MACRO-NUTRIMENTS (TOUT LES MACRO)\n\n`;
+    md += `## 💊 APPORTS EN VITAMINES, MINÉRAUX & MACRO-NUTRIMENTS (TOUS LES NUTRIMENTS)\n\n`;
     md += `| Catégorie | Nutriment | Total Période | Apport Moyen / jour | Cible (ARJ) | % ARJ | Statut |\n`;
     md += `|---|---|---|---|---|---|---|\n`;
 
@@ -1265,7 +1269,8 @@ const exportMarkdown = () => {
 
     for (const r of diagnostics.value.ratios || []) {
       const statusLabel = formatStatusLabel(r.status);
-      md += `| **${r.label}** | **${r.value} ${r.unit}** | ${r.target_label} | ${statusLabel} |\n`;
+      const valDisplay = r.value != null ? `**${r.value} ${r.unit}**` : '—';
+      md += `| **${r.label}** | ${valDisplay} | ${r.target_label} | ${statusLabel} |\n`;
     }
     md += `\n`;
   }
@@ -1307,12 +1312,14 @@ const scoreBgClass = (score) => {
 const ratioCardClass = (status) => {
   if (status === 'OPTIMAL') return 'bg-slate-900/60 border-slate-800';
   if (status === 'SOUS_OPTIMAL' || status === 'ATTENTION') return 'bg-amber-950/20 border-amber-500/30';
+  if (status === 'INDETERMINE' || status === 'NON_EVALUABLE') return 'bg-slate-900/40 border-slate-800/80';
   return 'bg-rose-950/30 border-rose-500/40 shadow-lg shadow-rose-500/5';
 };
 
 const statusBadgeClass = (status) => {
   if (status === 'OPTIMAL') return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
   if (status === 'SOUS_OPTIMAL' || status === 'ATTENTION') return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+  if (status === 'INDETERMINE' || status === 'NON_EVALUABLE') return 'bg-slate-500/10 text-slate-400 border border-slate-500/20';
   return 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
 };
 
@@ -1324,7 +1331,9 @@ const formatStatusLabel = (status) => {
     OPTIMAL: 'Optimal',
     SOUS_OPTIMAL: 'Sous-optimal',
     ATTENTION: 'Vigilance',
-    CRITIQUE: 'Déséquilibre Critique'
+    CRITIQUE: 'Déséquilibre Critique',
+    INDETERMINE: 'Données insuffisantes',
+    NON_EVALUABLE: 'Non évaluable'
   };
   return map[status] || status;
 };
