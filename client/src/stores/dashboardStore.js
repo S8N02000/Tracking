@@ -1,12 +1,11 @@
 import { defineStore } from 'pinia';
 import api from '@/api/client.js';
+import { getTodayLocalDate, shiftDaysLocal } from '@/utils/dateUtils.js';
 
 export const useDashboardStore = defineStore('dashboard', {
   state: () => {
-    const today = new Date().toISOString().substring(0, 10);
-    const d = new Date();
-    d.setDate(d.getDate() - 7);
-    const sevenDaysAgo = d.toISOString().substring(0, 10);
+    const today = getTodayLocalDate();
+    const sevenDaysAgo = shiftDaysLocal(today, -7);
 
     return {
       periodType: 7, // 0 (today), 7, 30, 90, 'custom'
@@ -27,14 +26,12 @@ export const useDashboardStore = defineStore('dashboard', {
     },
     setQuickPeriod(days) {
       this.periodType = days;
-      const today = new Date().toISOString().substring(0, 10);
+      const today = getTodayLocalDate();
       if (days === 0) {
         this.startDate = today;
         this.endDate = today;
       } else {
-        const d = new Date();
-        d.setDate(d.getDate() - days);
-        this.startDate = d.toISOString().substring(0, 10);
+        this.startDate = shiftDaysLocal(today, -days);
         this.endDate = today;
       }
       return this.fetchDashboard();
@@ -53,14 +50,8 @@ export const useDashboardStore = defineStore('dashboard', {
         daysToShift = Math.max(1, Math.round((e - s) / (1000 * 60 * 60 * 24)));
       }
 
-      const s = new Date(this.startDate);
-      const e = new Date(this.endDate);
-
-      s.setDate(s.getDate() + direction * daysToShift);
-      e.setDate(e.getDate() + direction * daysToShift);
-
-      this.startDate = s.toISOString().substring(0, 10);
-      this.endDate = e.toISOString().substring(0, 10);
+      this.startDate = shiftDaysLocal(this.startDate, direction * daysToShift);
+      this.endDate = shiftDaysLocal(this.endDate, direction * daysToShift);
 
       return this.fetchDashboard();
     },

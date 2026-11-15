@@ -50,35 +50,37 @@
     </div>
 
     <!-- Sport -->
-    <div v-if="logsStore.sports.length > 0" class="glass-panel p-3 rounded-2xl border border-slate-800">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-1.5">
-          <Activity class="w-3.5 h-3.5 text-emerald-400" />
-          <span class="text-xs font-bold text-white">Séances</span>
+    <div v-if="logsStore.sports.length > 0" class="glass-panel p-3.5 rounded-2xl border border-slate-800">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <Activity class="w-4 h-4 text-emerald-400" />
+          <span class="text-xs font-bold text-white uppercase tracking-wider">Séances d'activité</span>
         </div>
         <button
           v-if="authStore.isAuthenticated"
           @click="showAddSportModal = true"
-          class="text-[10px] text-emerald-400 hover:text-emerald-300"
+          class="text-xs font-medium text-emerald-400 hover:text-emerald-300 transition"
         >
-          + Ajouter
+          + Ajouter une séance
         </button>
       </div>
-      <div class="mt-1.5 flex flex-wrap gap-2">
+      <div class="flex flex-wrap gap-2">
         <div
           v-for="sport in logsStore.sports"
           :key="sport.id"
-          class="flex items-center gap-1.5 text-[10px] font-mono"
+          class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono shadow-sm"
         >
-          <span class="text-white font-semibold uppercase">{{ sport.sport_type }}</span>
-          <span class="text-slate-500">{{ sport.duration_min }}min</span>
-          <span class="text-emerald-400">{{ sport.kcal_burned }}kcal</span>
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-white font-semibold">{{ formatSportName(sport.sport_type) }}</span>
+          <span class="text-slate-400">{{ sport.duration_min }} min</span>
+          <span class="text-emerald-400 font-bold tabular-nums">-{{ sport.kcal_burned }} kcal</span>
           <button
             v-if="authStore.isAuthenticated"
             @click="logsStore.deleteSport(sport.id)"
-            class="text-slate-600 hover:text-rose-400"
+            class="text-slate-500 hover:text-rose-400 transition ml-1"
+            title="Supprimer la séance"
           >
-            <Trash2 class="w-2.5 h-2.5" />
+            <Trash2 class="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
@@ -663,57 +665,57 @@
             <tr
               v-for="row in sortedRows"
               :key="row.id"
-              class="border-b border-slate-800 hover:bg-slate-800/40"
+              class="border-b border-slate-800/80 hover:bg-slate-800/40 transition"
             >
-              <td class="px-2 py-1.5 text-white font-semibold sticky left-0 bg-slate-900 z-10">
-                <div class="truncate max-w-[120px]">{{ row.name }}</div>
-                <div class="text-slate-600 font-normal text-[9px] truncate">{{ row.category }}</div>
+              <td class="px-3 py-2 text-white font-semibold sticky left-0 bg-slate-950 z-20 border-r border-slate-800 shadow-md">
+                <div class="truncate max-w-[150px] text-slate-100" :title="row.name">{{ row.name }}</div>
+                <div class="text-slate-500 font-normal text-[9px] truncate" v-if="row.category && row.category !== row.name">{{ row.category }}</div>
               </td>
-              <td class="text-center px-1 py-1.5">
-                <span class="text-[10px] font-mono px-1 py-0.5 rounded bg-slate-800 text-cyan-400">{{ row.period_short }}</span>
+              <td class="text-center px-1.5 py-2">
+                <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm" :class="periodBadgeClass(row.period)">{{ row.period_short }}</span>
               </td>
-              <td class="text-center px-1 py-1.5 text-slate-400">{{ row.quantity_g }}</td>
-              <td class="text-center px-1 py-1.5 text-cyan-300 font-bold">{{ row.kcal }}</td>
-              <td class="text-center px-1 py-1.5 text-rose-300">{{ row.P }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-200">{{ row.G }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-400">{{ row.sucres }}</td>
-              <td class="text-center px-1 py-1.5 text-emerald-300">{{ row.fibres }}</td>
-              <td class="text-center px-1 py-1.5 text-yellow-300">{{ row.L }}</td>
-              <td class="text-center px-1 py-1.5 text-yellow-500">{{ row.AGS }}</td>
-              <td class="text-center px-1 py-1.5 text-slate-400">{{ row.sel }}</td>
-              <td class="text-center px-1 py-1.5 text-yellow-400">{{ row.mono }}</td>
-              <td class="text-center px-1 py-1.5 text-yellow-400">{{ row.poly }}</td>
-              <td class="text-center px-1 py-1.5 text-emerald-300">{{ row.omega3 }}</td>
-              <td class="text-center px-1 py-1.5 text-emerald-300">{{ row.omega6 }}</td>
-              <td class="text-center px-1 py-1.5 text-rose-400">{{ row.trans }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-500">{{ row.chol }}</td>
-              <td class="text-center px-1 py-1.5 text-slate-300">{{ row.sodium }}</td>
-              <td class="text-center px-1 py-1.5 text-cyan-300">{{ row.Ca }}</td>
-              <td class="text-center px-1 py-1.5 text-rose-300">{{ row.Fe }}</td>
-              <td class="text-center px-1 py-1.5 text-emerald-300">{{ row.Mg }}</td>
-              <td class="text-center px-1 py-1.5 text-purple-300">{{ row.Pmin }}</td>
-              <td class="text-center px-1 py-1.5 text-indigo-300">{{ row.K }}</td>
-              <td class="text-center px-1 py-1.5 text-teal-300">{{ row.Zn }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-300">{{ row.cuivre }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-300">{{ row.manganese }}</td>
-              <td class="text-center px-1 py-1.5 text-emerald-300">{{ row.selenium }}</td>
-              <td class="text-center px-1 py-1.5 text-cyan-300">{{ row.iode }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-200">{{ row.vitA }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-200">{{ row.vitD }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-200">{{ row.vitE }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-200">{{ row.vitK }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-200">{{ row.vitC }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-200">{{ row.B1 }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-200">{{ row.B2 }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-200">{{ row.B3 }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-200">{{ row.B5 }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-200">{{ row.B6 }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-200">{{ row.B9 }}</td>
-              <td class="text-center px-1 py-1.5 text-amber-200">{{ row.B12 }}</td>
-              <td class="text-center px-1 py-1.5 text-orange-400 font-semibold">{{ row.cafeine }}</td>
-              <td v-if="authStore.isAuthenticated" class="px-1 py-1.5">
-                <button @click="logsStore.deleteMeal(row.id)" class="text-slate-600 hover:text-rose-400 transition">
-                  <Trash2 class="w-3 h-3" />
+              <td class="text-right px-2 py-2 text-slate-300 tabular-nums">{{ row.quantity_g }}</td>
+              <td class="text-right px-2 py-2 text-cyan-300 font-bold tabular-nums">{{ row.kcal }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.P) ? 'text-slate-600' : 'text-rose-300'">{{ formatCell(row.P) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.G) ? 'text-slate-600' : 'text-amber-200'">{{ formatCell(row.G) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.sucres) ? 'text-slate-600' : 'text-amber-400'">{{ formatCell(row.sucres) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.fibres) ? 'text-slate-600' : 'text-emerald-300'">{{ formatCell(row.fibres) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.L) ? 'text-slate-600' : 'text-yellow-300'">{{ formatCell(row.L) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.AGS) ? 'text-slate-600' : 'text-yellow-500'">{{ formatCell(row.AGS) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.sel) ? 'text-slate-600' : 'text-slate-400'">{{ formatCell(row.sel) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.mono) ? 'text-slate-600' : 'text-yellow-400'">{{ formatCell(row.mono) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.poly) ? 'text-slate-600' : 'text-yellow-400'">{{ formatCell(row.poly) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.omega3) ? 'text-slate-600' : 'text-emerald-300'">{{ formatCell(row.omega3) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.omega6) ? 'text-slate-600' : 'text-emerald-300'">{{ formatCell(row.omega6) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.trans) ? 'text-slate-600' : 'text-rose-400'">{{ formatCell(row.trans) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.chol) ? 'text-slate-600' : 'text-amber-500'">{{ formatCell(row.chol) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.sodium) ? 'text-slate-600' : 'text-slate-300'">{{ formatCell(row.sodium) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.Ca) ? 'text-slate-600' : 'text-cyan-300'">{{ formatCell(row.Ca) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.Fe) ? 'text-slate-600' : 'text-rose-300'">{{ formatCell(row.Fe) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.Mg) ? 'text-slate-600' : 'text-emerald-300'">{{ formatCell(row.Mg) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.Pmin) ? 'text-slate-600' : 'text-purple-300'">{{ formatCell(row.Pmin) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.K) ? 'text-slate-600' : 'text-indigo-300'">{{ formatCell(row.K) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.Zn) ? 'text-slate-600' : 'text-teal-300'">{{ formatCell(row.Zn) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.cuivre) ? 'text-slate-600' : 'text-amber-300'">{{ formatCell(row.cuivre) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.manganese) ? 'text-slate-600' : 'text-amber-300'">{{ formatCell(row.manganese) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.selenium) ? 'text-slate-600' : 'text-emerald-300'">{{ formatCell(row.selenium) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.iode) ? 'text-slate-600' : 'text-cyan-300'">{{ formatCell(row.iode) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.vitA) ? 'text-slate-600' : 'text-amber-200'">{{ formatCell(row.vitA) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.vitD) ? 'text-slate-600' : 'text-amber-200'">{{ formatCell(row.vitD) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.vitE) ? 'text-slate-600' : 'text-amber-200'">{{ formatCell(row.vitE) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.vitK) ? 'text-slate-600' : 'text-amber-200'">{{ formatCell(row.vitK) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.vitC) ? 'text-slate-600' : 'text-amber-200'">{{ formatCell(row.vitC) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.B1) ? 'text-slate-600' : 'text-amber-200'">{{ formatCell(row.B1) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.B2) ? 'text-slate-600' : 'text-amber-200'">{{ formatCell(row.B2) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.B3) ? 'text-slate-600' : 'text-amber-200'">{{ formatCell(row.B3) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.B5) ? 'text-slate-600' : 'text-amber-200'">{{ formatCell(row.B5) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.B6) ? 'text-slate-600' : 'text-amber-200'">{{ formatCell(row.B6) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.B9) ? 'text-slate-600' : 'text-amber-200'">{{ formatCell(row.B9) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums" :class="isZeroCell(row.B12) ? 'text-slate-600' : 'text-amber-200'">{{ formatCell(row.B12) }}</td>
+              <td class="text-right px-2 py-2 tabular-nums font-semibold" :class="isZeroCell(row.cafeine) ? 'text-slate-600' : 'text-orange-400'">{{ formatCell(row.cafeine) }}</td>
+              <td v-if="authStore.isAuthenticated" class="px-2 py-2 text-center">
+                <button @click="logsStore.deleteMeal(row.id)" class="text-slate-600 hover:text-rose-400 transition" title="Supprimer">
+                  <Trash2 class="w-3.5 h-3.5" />
                 </button>
               </td>
             </tr>
@@ -900,116 +902,57 @@ const sortKey = ref(null);
 const sortCol = ref(null);
 
 const PERIOD_SHORT = {
-  petit_dejeuner: 'matin',
-  dejeuner: 'midi',
-  diner: 'soir',
-  collation: 'col'
+  petit_dejeuner: 'Matin',
+  dejeuner: 'Midi',
+  diner: 'Soir',
+  collation: 'Collation'
 };
 
-// Column order matching Dashboard exactly
-const DISPLAY_COLS = [
-  'kcal', 'P', 'G', 'sucres', 'fibres', 'L', 'AGS', 'sel',
-  'mono', 'poly', 'omega3', 'omega6', 'trans', 'chol', 'sodium',
-  'Ca', 'Fe', 'Mg', 'Pmin', 'K', 'Zn', 'cuivre', 'manganese', 'selenium', 'iode',
-  'vitA', 'vitD', 'vitE', 'vitK', 'vitC', 'B1', 'B2', 'B3', 'B5', 'B6', 'B9', 'B12',
-  'cafeine'
-];
+const PERIOD_ORDER = {
+  petit_dejeuner: 1,
+  dejeuner: 2,
+  collation: 3,
+  diner: 4
+};
 
-function calcNutr(meal, col) {
-  if (!meal) return 0;
-  const qty = meal.quantity_g || 0;
-  if (meal.food_id) {
-    const f = meal;
-    const base = qty / 100;
-    switch (col) {
-      case 'kcal':    return +(base * (f.energy_kcal_100g || 0)).toFixed(0);
-      case 'P':       return +(base * (f.proteins_g_100g || 0)).toFixed(1);
-      case 'G':       return +(base * (f.carbohydrates_g_100g || 0)).toFixed(1);
-      case 'sucres':  return +(base * (f.sugars_g_100g || 0)).toFixed(1);
-      case 'fibres':  return +(base * (f.fiber_g_100g || 0)).toFixed(1);
-      case 'L':       return +(base * (f.fat_g_100g || 0)).toFixed(1);
-      case 'AGS':     return +(base * (f.saturated_fat_g_100g || 0)).toFixed(1);
-      case 'sel':     return +(base * (f.salt_g_100g || 0)).toFixed(2);
-      case 'mono':    return +(base * (f.monounsaturated_fat_g_100g || 0)).toFixed(1);
-      case 'poly':    return +(base * (f.polyunsaturated_fat_g_100g || 0)).toFixed(1);
-      case 'omega3':  return +(base * (f.omega3_g_100g || 0)).toFixed(2);
-      case 'omega6':  return +(base * (f.omega6_g_100g || 0)).toFixed(2);
-      case 'trans':   return +(base * (f.trans_fat_g_100g || 0)).toFixed(2);
-      case 'chol':    return +(base * (f.cholesterol_mg_100g || 0)).toFixed(0);
-      case 'sodium': return +(base * (f.sodium_mg_100g || 0)).toFixed(0);
-      case 'Ca':      return +(base * (f.calcium_mg_100g || 0)).toFixed(0);
-      case 'Fe':      return +(base * (f.iron_mg_100g || 0)).toFixed(2);
-      case 'Mg':      return +(base * (f.magnesium_mg_100g || 0)).toFixed(0);
-      case 'Pmin':    return +(base * (f.phosphorus_mg_100g || 0)).toFixed(0);
-      case 'K':       return +(base * (f.potassium_mg_100g || 0)).toFixed(0);
-      case 'Zn':      return +(base * (f.zinc_mg_100g || 0)).toFixed(2);
-      case 'cuivre':  return +(base * (f.copper_mg_100g || 0)).toFixed(2);
-      case 'manganese': return +(base * (f.manganese_mg_100g || 0)).toFixed(2);
-      case 'selenium': return +(base * (f.selenium_mg_100g || 0)).toFixed(1);
-      case 'iode':    return +(base * (f.iodine_mg_100g || 0)).toFixed(0);
-      case 'vitA':    return +(base * (f.vit_a_mcg_100g || 0)).toFixed(0);
-      case 'vitD':    return +(base * (f.vit_d_mcg_100g || 0)).toFixed(1);
-      case 'vitE':    return +(base * (f.vit_e_mg_100g || 0)).toFixed(1);
-      case 'vitK':    return +(base * (f.vit_k_mcg_100g || 0)).toFixed(0);
-      case 'vitC':    return +(base * (f.vit_c_mg_100g || 0)).toFixed(0);
-      case 'B1':      return +(base * (f.vit_b1_mg_100g || 0)).toFixed(2);
-      case 'B2':      return +(base * (f.vit_b2_mg_100g || 0)).toFixed(2);
-      case 'B3':      return +(base * (f.vit_b3_mg_100g || 0)).toFixed(1);
-      case 'B5':      return +(base * (f.vit_b5_mg_100g || 0)).toFixed(2);
-      case 'B6':      return +(base * (f.vit_b6_mg_100g || 0)).toFixed(2);
-      case 'B9':      return +(base * (f.vit_b9_mcg_100g || 0)).toFixed(0);
-      case 'B12':     return +(base * (f.vit_b12_mcg_100g || 0)).toFixed(1);
-      case 'cafeine': return +(base * (f.caffeine_mg_100g || 0)).toFixed(0);
-      default: return 0;
-    }
-  } else if (meal.recipe_id) {
-    const r = meal;
-    const portionWeight = (r.recipe_total_weight || 0) / (r.recipe_portions || 1);
-    const portions = qty / portionWeight;
-    switch (col) {
-      case 'kcal':    return +(portions * (r.energy_kcal_per_portion || 0)).toFixed(0);
-      case 'P':       return +(portions * (r.proteins_g_per_portion || 0)).toFixed(1);
-      case 'G':       return +(portions * (r.carbohydrates_g_per_portion || 0)).toFixed(1);
-      case 'sucres':  return +(portions * (r.sugars_g_per_portion || 0)).toFixed(1);
-      case 'fibres':  return +(portions * (r.fiber_g_per_portion || 0)).toFixed(1);
-      case 'L':       return +(portions * (r.fat_g_per_portion || 0)).toFixed(1);
-      case 'AGS':     return +(portions * (r.saturated_fat_g_per_portion || 0)).toFixed(1);
-      case 'sel':     return +(portions * (r.salt_g_per_portion || 0)).toFixed(2);
-      case 'mono':    return +(portions * (r.monounsaturated_fat_g_per_portion || 0)).toFixed(1);
-      case 'poly':    return +(portions * (r.polyunsaturated_fat_g_per_portion || 0)).toFixed(1);
-      case 'omega3':  return +(portions * (r.omega3_g_per_portion || 0)).toFixed(2);
-      case 'omega6':  return +(portions * (r.omega6_g_per_portion || 0)).toFixed(2);
-      case 'trans':   return +(portions * (r.trans_fat_g_per_portion || 0)).toFixed(2);
-      case 'chol':    return +(portions * (r.cholesterol_mg_per_portion || 0)).toFixed(0);
-      case 'sodium':  return +(portions * (r.sodium_mg_per_portion || (r.salt_g_per_portion || 0) / 2.54 * 1000)).toFixed(0);
-      case 'cuivre':  return +(portions * (r.copper_mg_per_portion || 0)).toFixed(2);
-      case 'manganese': return +(portions * (r.manganese_mg_per_portion || 0)).toFixed(2);
-      case 'selenium': return +(portions * (r.selenium_mcg_per_portion || 0)).toFixed(1);
-      case 'iode':    return +(portions * (r.iodine_mcg_per_portion || 0)).toFixed(0);
-      case 'vitK':    return +(portions * (r.vit_k_mcg_per_portion || 0)).toFixed(0);
-      case 'Ca':      return +(portions * (r.calcium_mg_per_portion || 0)).toFixed(0);
-      case 'Fe':      return +(portions * (r.iron_mg_per_portion || 0)).toFixed(2);
-      case 'Mg':      return +(portions * (r.magnesium_mg_per_portion || 0)).toFixed(0);
-      case 'Pmin':    return +(portions * (r.phosphorus_mg_per_portion || 0)).toFixed(0);
-      case 'K':       return +(portions * (r.potassium_mg_per_portion || 0)).toFixed(0);
-      case 'Zn':      return +(portions * (r.zinc_mg_per_portion || 0)).toFixed(2);
-      case 'vitA':    return +(portions * (r.vit_a_mcg_per_portion || 0)).toFixed(0);
-      case 'vitC':    return +(portions * (r.vit_c_mg_per_portion || 0)).toFixed(0);
-      case 'vitD':     return +(portions * (r.vit_d_mcg_per_portion || 0)).toFixed(1);
-      case 'B1':      return +(portions * (r.vit_b1_mg_per_portion || 0)).toFixed(2);
-      case 'B2':      return +(portions * (r.vit_b2_mg_per_portion || 0)).toFixed(2);
-      case 'B3':      return +(portions * (r.vit_b3_mg_per_portion || 0)).toFixed(1);
-      case 'B5':      return +(portions * (r.vit_b5_mg_per_portion || 0)).toFixed(2);
-      case 'B6':      return +(portions * (r.vit_b6_mg_per_portion || 0)).toFixed(2);
-      case 'B9':      return +(portions * (r.vit_b9_mcg_per_portion || 0)).toFixed(0);
-      case 'B12':     return +(portions * (r.vit_b12_mcg_per_portion || 0)).toFixed(1);
-      case 'vitE':    return +(portions * (r.vit_e_mg_per_portion || 0)).toFixed(1);
-      case 'cafeine': return +(portions * (r.caffeine_mg_per_portion || 0)).toFixed(0);
-      default: return 0;
-    }
-  }
-  return 0;
+const SPORT_LABELS = {
+  tapis_roulant: 'Tapis de course',
+  velo: 'Vélo',
+  pied: 'Marche / Course',
+  natation: 'Natation',
+  musculation: 'Musculation',
+  jardin: 'Jardinage',
+  autre: 'Autre sport'
+};
+
+function formatSportName(type) {
+  if (!type) return 'Séance sportive';
+  const clean = String(type).toLowerCase();
+  return SPORT_LABELS[clean] || type.replace(/_/g, ' ');
 }
+
+function formatCell(val) {
+  if (val === 0 || val === '0' || val === '0.0' || val === '0.00' || val == null) {
+    return '—';
+  }
+  return val;
+}
+
+function isZeroCell(val) {
+  return val === 0 || val === '0' || val === '0.0' || val === '0.00' || val == null;
+}
+
+function periodBadgeClass(period) {
+  switch (period) {
+    case 'petit_dejeuner': return 'bg-cyan-950/80 text-cyan-300 border border-cyan-700/50';
+    case 'dejeuner': return 'bg-amber-950/80 text-amber-300 border border-amber-700/50';
+    case 'collation': return 'bg-emerald-950/80 text-emerald-300 border border-emerald-700/50';
+    case 'diner': return 'bg-indigo-950/80 text-indigo-300 border border-indigo-700/50';
+    default: return 'bg-slate-800 text-slate-300 border border-slate-700';
+  }
+}
+
+import { NUTRIENTS_MAP, DISPLAY_COLS, calcNutr } from '@/config/nutrients.js';
 
 const rows = computed(() => {
   return logsStore.meals.map(m => {
@@ -1031,7 +974,14 @@ const rows = computed(() => {
 });
 
 const sortedRows = computed(() => {
-  if (!sortCol.value) return rows.value;
+  if (!sortCol.value) {
+    return [...rows.value].sort((a, b) => {
+      const orderA = PERIOD_ORDER[a.period] || 99;
+      const orderB = PERIOD_ORDER[b.period] || 99;
+      if (orderA !== orderB) return orderA - orderB;
+      return (a.name || '').localeCompare(b.name || '');
+    });
+  }
   const col = sortCol.value;
   const dir = sortKey.value;
   return [...rows.value].sort((a, b) => {

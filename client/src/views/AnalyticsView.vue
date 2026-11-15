@@ -56,15 +56,15 @@
         <div>
           <h3 class="text-lg font-bold text-white flex items-center gap-2">
             <Sparkles class="w-5 h-5 text-amber-400" />
-            Explorateur Sur-Mesure ("TOUT")
+            Évolution Métabolique & Tendances
           </h3>
-          <p class="text-xs text-slate-400">Sélectionnez un indicateur. Les jours sans données sont automatiquement ignorés pour éviter les chutes à 0.</p>
+          <p class="text-xs text-slate-400">Suivi multi-indicateurs dans le temps avec lissage et moyenne mobile 7 jours.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
           <!-- Metric Select -->
           <div class="flex items-center space-x-2">
-            <label class="text-xs font-mono text-slate-400">Variable :</label>
+            <label class="text-xs font-mono text-slate-400">Indicateur :</label>
             <select
               v-model="customMetricKey"
               @change="updateCustomChart"
@@ -101,15 +101,15 @@
           </div>
 
           <!-- Ignore Zeroes Toggle -->
-          <label class="flex items-center space-x-2 text-xs font-mono text-slate-300 cursor-pointer bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
+          <label class="flex items-center space-x-2 text-xs font-mono text-slate-300 cursor-pointer bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 hover:border-slate-700 transition">
             <input type="checkbox" v-model="ignoreZeroes" @change="updateCustomChart" class="rounded bg-slate-950 border-slate-700 text-cyan-500 focus:ring-0" />
-            <span>Ignorer jours à 0 (Reliure continue)</span>
+            <span>Relier les jours sans données</span>
           </label>
 
           <!-- Trendline Toggle -->
-          <label class="flex items-center space-x-2 text-xs font-mono text-slate-300 cursor-pointer bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
+          <label class="flex items-center space-x-2 text-xs font-mono text-slate-300 cursor-pointer bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 hover:border-slate-700 transition">
             <input type="checkbox" v-model="showTrendline" @change="updateCustomChart" class="rounded bg-slate-950 border-slate-700 text-cyan-500 focus:ring-0" />
-            <span>Afficher Tendance</span>
+            <span>Moyenne mobile 7j</span>
           </label>
         </div>
       </div>
@@ -126,17 +126,21 @@
     <!-- Body Composition Card -->
     <div class="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800">
       <!-- Header -->
-      <div class="flex items-center gap-3 mb-4">
-        <Scale class="w-5 h-5 text-rose-400 shrink-0" />
-        <h3 class="text-sm sm:text-base font-bold text-white">Composition Corporelle</h3>
-        <span class="text-xs text-slate-500 font-mono ml-auto shrink-0">{{ latestScanDate }}</span>
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div class="flex items-center gap-2">
+          <Scale class="w-5 h-5 text-rose-400 shrink-0" />
+          <h3 class="text-sm sm:text-base font-bold text-white">Composition Corporelle</h3>
+        </div>
+        <span class="text-xs text-slate-400 font-mono bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-800">
+          Dernier scan : <strong class="text-slate-200">{{ latestScanDate }}</strong>
+        </span>
       </div>
 
       <div class="flex flex-col gap-4">
         <!-- Top: fat % + badge -->
         <div class="flex items-end gap-4">
           <div>
-            <div class="text-3xl font-bold text-rose-400">{{ fatPercent }}<span class="text-lg">%</span></div>
+            <div class="text-3xl font-bold text-rose-400 font-mono tabular-nums">{{ fatPercent }}<span class="text-lg">%</span></div>
             <div class="text-xs text-slate-400">Masse Grasse</div>
           </div>
           <span
@@ -148,42 +152,39 @@
         </div>
 
         <!-- Scale bar (full width) -->
-        <div class="w-full flex flex-col gap-1">
-          <div class="relative h-3 rounded-full bg-slate-800 overflow-hidden flex">
-            <div class="h-full bg-blue-500/50" style="width:13%" />
-            <div class="h-full bg-emerald-400/50" style="width:19%" />
-            <div class="h-full bg-yellow-400/50" style="width:17%" />
-            <div class="h-full bg-orange-400/50" style="width:21%" />
-            <div class="h-full bg-rose-500/50" style="width:30%" />
+        <div class="w-full flex flex-col gap-1.5">
+          <div class="relative h-3.5 rounded-full bg-slate-800 overflow-hidden flex shadow-inner">
+            <div class="h-full bg-blue-500/70" style="width:13%" title="Minimum (< 13%)" />
+            <div class="h-full bg-emerald-400/70" style="width:19%" title="Athlétique (13-17%)" />
+            <div class="h-full bg-yellow-400/70" style="width:17%" title="Forme (17-21%)" />
+            <div class="h-full bg-orange-400/70" style="width:21%" title="Moyen (21-25%)" />
+            <div class="h-full bg-rose-500/70" style="width:30%" title="Élevé (> 25%)" />
             <!-- Marker: white triangle pointing down -->
             <div
               v-if="fatPercent !== '—'"
               class="absolute top-0 w-0 h-0"
               :style="`left:${fatScalePosition};transform:translateX(-50%)`"
-              style="border-left:4px solid transparent;border-right:4px solid transparent;border-top:6px solid white"
+              style="border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid white;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.8))"
             />
           </div>
-          <div class="flex justify-between text-[9px] text-slate-600 font-mono leading-tight">
-            <span>2%</span><span>13%</span><span>17%</span><span>24%</span><span>25%+</span>
-          </div>
-          <div class="flex justify-between text-[9px] text-slate-500 font-mono leading-tight">
-            <span>Min</span><span>Athl.</span><span>Forme</span><span>Moyen</span><span>Obèse</span>
+          <div class="flex justify-between text-[10px] text-slate-400 font-mono leading-tight px-0.5">
+            <span>2% (Min)</span><span>13% (Athl.)</span><span>17% (Forme)</span><span>24% (Moyen)</span><span>25%+ (Élevé)</span>
           </div>
         </div>
 
         <!-- Stats: 3 columns on mobile -->
         <div class="grid grid-cols-3 gap-2 text-xs font-mono">
-          <div class="flex flex-col items-center gap-0.5 p-2 rounded-xl bg-slate-800/50">
-            <div class="text-indigo-400 font-bold">{{ latestScanWeight }} <span class="text-slate-500 text-[10px]">kg</span></div>
-            <div class="text-slate-500 text-[10px]">Poids</div>
+          <div class="flex flex-col items-center gap-0.5 p-2 rounded-xl bg-slate-800/50 border border-slate-800">
+            <div class="text-indigo-400 font-bold tabular-nums">{{ latestScanWeight }} <span class="text-slate-500 text-[10px]">kg</span></div>
+            <div class="text-slate-400 text-[10px]">Poids</div>
           </div>
-          <div class="flex flex-col items-center gap-0.5 p-2 rounded-xl bg-slate-800/50">
-            <div class="text-emerald-400 font-bold">{{ latestScanMuscle }} <span class="text-slate-500 text-[10px]">kg</span></div>
-            <div class="text-slate-500 text-[10px]">Muscle</div>
+          <div class="flex flex-col items-center gap-0.5 p-2 rounded-xl bg-slate-800/50 border border-slate-800">
+            <div class="text-emerald-400 font-bold tabular-nums">{{ latestScanMuscle }} <span class="text-slate-500 text-[10px]">kg</span></div>
+            <div class="text-slate-400 text-[10px]">Muscle</div>
           </div>
-          <div class="flex flex-col items-center gap-0.5 p-2 rounded-xl bg-slate-800/50">
-            <div class="text-rose-400 font-bold">{{ latestScanFat }} <span class="text-slate-500 text-[10px]">kg</span></div>
-            <div class="text-slate-500 text-[10px]">Gras</div>
+          <div class="flex flex-col items-center gap-0.5 p-2 rounded-xl bg-slate-800/50 border border-slate-800">
+            <div class="text-rose-400 font-bold tabular-nums">{{ latestScanFat }} <span class="text-slate-500 text-[10px]">kg</span></div>
+            <div class="text-slate-400 text-[10px]">Gras</div>
           </div>
         </div>
       </div>
@@ -192,10 +193,10 @@
     <!-- Charts Grid: Correlation & Radar -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- 1. Correlation: Weight vs Cumulative Caloric Balance -->
-      <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
-        <h3 class="text-base font-bold text-white flex items-center justify-between">
+      <div class="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 space-y-4">
+        <h3 class="text-base font-bold text-white flex flex-wrap items-center justify-between gap-2">
           <span>Corrélation : Poids & Bilan Calorique Cumulé</span>
-          <span class="text-xs font-mono text-cyan-400">Chart.js Dual Axis</span>
+          <span class="text-xs font-mono text-cyan-400 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-500/20">Double Échelle</span>
         </h3>
         <div class="h-72 w-full">
           <Line v-if="correlationData" :data="correlationData" :options="correlationOptions" />
@@ -203,10 +204,10 @@
       </div>
 
       <!-- 2. Micronutrients Radar vs RDA -->
-      <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
-        <h3 class="text-base font-bold text-white flex items-center justify-between">
+      <div class="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 space-y-4">
+        <h3 class="text-base font-bold text-white flex flex-wrap items-center justify-between gap-2">
           <span>Radar Micronutritionnel (% AJR)</span>
-          <span class="text-xs font-mono text-emerald-400">Couverture Apports</span>
+          <span class="text-xs font-mono text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/20">Couverture Apports</span>
         </h3>
         <div class="h-72 w-full flex items-center justify-center">
           <Radar v-if="radarData" :data="radarData" :options="radarOptions" />
@@ -214,10 +215,10 @@
       </div>
 
       <!-- 3. Meal Distribution Doughnut -->
-      <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4 lg:col-span-2">
-        <h3 class="text-base font-bold text-white flex items-center justify-between">
+      <div class="glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 space-y-4 lg:col-span-2">
+        <h3 class="text-base font-bold text-white flex flex-wrap items-center justify-between gap-2">
           <span>Répartition Calorique par Repas</span>
-          <span class="text-xs font-mono text-amber-400">Total: {{ mealTotalKcal }} kcal</span>
+          <span class="text-xs font-mono text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-500/20">Total: {{ mealTotalKcal }} kcal</span>
         </h3>
         <div class="h-64 w-full flex items-center justify-center">
           <Doughnut v-if="mealData" :data="mealData" :options="mealOptions" />
@@ -230,6 +231,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import api from '@/api/client.js';
+import { getTodayLocalDate, shiftDaysLocal } from '@/utils/dateUtils.js';
 import { LineChart, Sparkles, Scale } from 'lucide-vue-next';
 import {
   Chart as ChartJS,
@@ -343,16 +345,59 @@ const customMetricLabels = {
   vit_c_mg: 'Vitamine C (mg)'
 };
 
+function formatChartDate(label) {
+  if (!label || typeof label !== 'string') return label;
+  const parts = label.split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}`;
+  }
+  return label;
+}
+
 const customChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
-  spanGaps: true, // Connect lines across null values
+  spanGaps: true,
+  interaction: {
+    mode: 'index',
+    intersect: false
+  },
   scales: {
-    x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
-    y: { ticks: { color: '#06b6d4' }, grid: { color: '#1e293b' } }
+    x: {
+      ticks: {
+        color: '#94a3b8',
+        maxTicksLimit: 8,
+        maxRotation: 0,
+        callback: function(val) {
+          const raw = this.getLabelForValue(val);
+          return formatChartDate(raw);
+        }
+      },
+      grid: { color: '#1e293b' }
+    },
+    y: {
+      ticks: {
+        color: '#06b6d4',
+        font: { family: 'monospace' }
+      },
+      grid: { color: '#1e293b' }
+    }
   },
   plugins: {
-    legend: { labels: { color: '#f8fafc' } }
+    legend: {
+      labels: {
+        color: '#f8fafc',
+        boxWidth: 12,
+        usePointStyle: true
+      }
+    },
+    tooltip: {
+      backgroundColor: '#0f172a',
+      borderColor: '#334155',
+      borderWidth: 1,
+      titleFont: { family: 'monospace' },
+      bodyFont: { family: 'monospace' }
+    }
   }
 };
 
@@ -360,27 +405,61 @@ const correlationOptions = {
   responsive: true,
   maintainAspectRatio: false,
   spanGaps: true,
+  interaction: {
+    mode: 'index',
+    intersect: false
+  },
   scales: {
-    x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+    x: {
+      ticks: {
+        color: '#94a3b8',
+        maxTicksLimit: 7,
+        maxRotation: 0,
+        callback: function(val) {
+          const raw = this.getLabelForValue(val);
+          return formatChartDate(raw);
+        }
+      },
+      grid: { color: '#1e293b' }
+    },
     yWeight: {
       type: 'linear',
       display: true,
       position: 'left',
-      ticks: { color: '#818cf8' },
+      ticks: {
+        color: '#818cf8',
+        font: { family: 'monospace' }
+      },
       grid: { color: '#1e293b' },
-      title: { display: true, text: 'Poids (kg)', color: '#818cf8' }
+      title: { display: true, text: 'Poids (kg)', color: '#818cf8', font: { size: 11, weight: 'bold' } }
     },
     yBalance: {
       type: 'linear',
       display: true,
       position: 'right',
-      ticks: { color: '#06b6d4' },
+      ticks: {
+        color: '#06b6d4',
+        font: { family: 'monospace' }
+      },
       grid: { drawOnChartArea: false },
-      title: { display: true, text: 'Bilan Cumulé (kcal)', color: '#06b6d4' }
+      title: { display: true, text: 'Bilan Cumulé (kcal)', color: '#06b6d4', font: { size: 11, weight: 'bold' } }
     }
   },
   plugins: {
-    legend: { labels: { color: '#f8fafc' } }
+    legend: {
+      labels: {
+        color: '#f8fafc',
+        boxWidth: 12,
+        usePointStyle: true
+      }
+    },
+    tooltip: {
+      backgroundColor: '#0f172a',
+      borderColor: '#334155',
+      borderWidth: 1,
+      titleFont: { family: 'monospace' },
+      bodyFont: { family: 'monospace' }
+    }
   }
 };
 
@@ -482,13 +561,11 @@ const updateCustomChart = () => {
 };
 
 const loadAnalytics = async () => {
-  const today = new Date().toISOString().substring(0, 10);
+  const today = getTodayLocalDate();
   let start = '2000-01-01';
 
   if (rangeDays.value !== 9999) {
-    const d = new Date();
-    d.setDate(d.getDate() - rangeDays.value);
-    start = d.toISOString().substring(0, 10);
+    start = shiftDaysLocal(today, -rangeDays.value);
   }
 
   const [dashRes, corrRes, radRes, mealRes] = await Promise.all([

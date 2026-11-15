@@ -99,10 +99,6 @@
             Du <strong class="text-white">{{ store.startDate }}</strong> au <strong class="text-white">{{ store.endDate }}</strong>
             ({{ store.queryInfo?.days_count || 0 }} jours)
           </span>
-
-          <span v-if="store.queryInfo" class="text-emerald-400 flex items-center gap-1">
-            <Zap class="w-3.5 h-3.5" /> {{ store.queryInfo.execution_time_ms }} ms
-          </span>
         </div>
       </div>
     </div>
@@ -687,21 +683,21 @@
 
           <tbody class="divide-y divide-slate-800/60">
             <tr v-for="row in store.rows" :key="row.date" class="hover:bg-slate-800/50 transition">
-              <td class="py-3 px-4 font-bold text-white sticky left-0 bg-slate-950 z-10 border-r border-slate-800/80 shadow">
+              <td class="py-3 px-4 font-bold text-white sticky left-0 bg-slate-950 z-20 border-r border-slate-800 shadow-md">
                 <router-link :to="`/logs?date=${row.date}`" class="hover:text-cyan-400 underline decoration-cyan-500/30">
                   {{ row.date }}
                 </router-link>
               </td>
 
-              <td class="py-3 px-3 text-cyan-300 font-semibold">{{ row.kcal_in }}</td>
-              <td class="py-3 px-3 text-slate-400">{{ row.bmr_kcal }}</td>
-              <td class="py-3 px-3 text-emerald-400">
+              <td class="py-3 px-3 text-cyan-300 font-semibold tabular-nums">{{ row.kcal_in }}</td>
+              <td class="py-3 px-3 text-slate-400 tabular-nums">{{ row.bmr_kcal }}</td>
+              <td class="py-3 px-3 text-emerald-400 tabular-nums">
                 <span v-if="row.kcal_sport > 0" class="flex items-center gap-1">+{{ row.kcal_sport }}</span>
-                <span v-else class="text-slate-600">-</span>
+                <span v-else class="text-slate-600">—</span>
               </td>
-              <td class="py-3 px-3 text-amber-400 font-semibold">{{ row.total_kcal_expended }}</td>
+              <td class="py-3 px-3 text-amber-400 font-semibold tabular-nums">{{ row.total_kcal_expended }}</td>
 
-              <td class="py-3 px-3 font-bold">
+              <td class="py-3 px-3 font-bold tabular-nums">
                 <span
                   class="px-2 py-0.5 rounded-full text-[11px]"
                   :class="row.net_balance <= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'"
@@ -710,21 +706,21 @@
                 </span>
               </td>
 
-              <td class="py-3 px-3 text-indigo-300 font-semibold">
+              <td class="py-3 px-3 text-indigo-300 font-semibold tabular-nums">
                 <span v-if="row.scan && row.scan.weight_kg">
                   {{ row.scan.weight_kg }}
-                  <span v-if="row.scan.is_inherited" class="text-[10px] text-slate-500" title="Reporté">(rep.)</span>
+                  <span v-if="row.scan.is_inherited" class="text-[9px] text-slate-400 font-normal ml-1 px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800" title="Valeur reportée">(reporté)</span>
                 </span>
-                <span v-else class="text-slate-600">-</span>
+                <span v-else class="text-slate-600">—</span>
               </td>
 
-              <td class="py-3 px-3 text-rose-300">{{ row.proteins_g }} <span class="text-[10px] text-slate-500">({{ row.targets.proteins_pct }}%)</span></td>
-              <td class="py-3 px-3 text-amber-200">{{ row.carbs_g }} <span class="text-[10px] text-slate-500">({{ row.targets.carbs_pct }}%)</span></td>
-              <td class="py-3 px-3 text-amber-400">{{ row.sugars_g }}</td>
-              <td class="py-3 px-3 text-emerald-300">{{ row.fiber_g }} <span class="text-[10px] text-slate-500">({{ row.targets.fiber_pct }}%)</span></td>
-              <td class="py-3 px-3 text-yellow-300">{{ row.fat_g }} <span class="text-[10px] text-slate-500">({{ row.targets.fat_pct }}%)</span></td>
-              <td class="py-3 px-3 text-yellow-500">{{ row.saturated_fat_g }}</td>
-              <td class="py-3 px-3 text-slate-400">{{ row.salt_g }}</td>
+              <td class="py-3 px-3 text-rose-300 tabular-nums">{{ row.proteins_g }} <span class="text-[10px] text-slate-500">({{ row.targets.proteins_pct }}%)</span></td>
+              <td class="py-3 px-3 text-amber-200 tabular-nums">{{ row.carbs_g }} <span class="text-[10px] text-slate-500">({{ row.targets.carbs_pct }}%)</span></td>
+              <td class="py-3 px-3 text-amber-400 tabular-nums">{{ row.sugars_g }}</td>
+              <td class="py-3 px-3 text-emerald-300 tabular-nums">{{ row.fiber_g }} <span class="text-[10px] text-slate-500">({{ row.targets.fiber_pct }}%)</span></td>
+              <td class="py-3 px-3 text-yellow-300 tabular-nums">{{ row.fat_g }} <span class="text-[10px] text-slate-500">({{ row.targets.fat_pct }}%)</span></td>
+              <td class="py-3 px-3 text-yellow-500 tabular-nums">{{ row.saturated_fat_g }}</td>
+              <td class="py-3 px-3 text-slate-400 tabular-nums">{{ row.salt_g }}</td>
 
               <!-- Extended 35-Nutrient Values -->
               <template v-if="fullViewMode">

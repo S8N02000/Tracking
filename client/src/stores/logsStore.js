@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia';
 import api from '@/api/client.js';
+import { getTodayLocalDate } from '@/utils/dateUtils.js';
 
 export const useLogsStore = defineStore('logs', {
   state: () => {
-    const today = new Date().toISOString().substring(0, 10);
+    const today = getTodayLocalDate();
     return {
       selectedDate: today,
       meals: [],
