@@ -16,6 +16,7 @@ router.get('/meals', (req, res) => {
            f.salt_g_100g, f.sodium_mg_100g, f.cholesterol_mg_100g,
            f.calcium_mg_100g, f.iron_mg_100g, f.magnesium_mg_100g, f.potassium_mg_100g, f.zinc_mg_100g, f.phosphorus_mg_100g, f.manganese_mg_100g, f.copper_mg_100g, f.selenium_mg_100g, f.iodine_mg_100g,
            f.vit_a_mcg_100g, f.vit_b1_mg_100g, f.vit_b2_mg_100g, f.vit_b3_mg_100g, f.vit_b5_mg_100g, f.vit_b6_mg_100g, f.vit_b9_mcg_100g, f.vit_b12_mcg_100g, f.vit_c_mg_100g, f.vit_d_mcg_100g, f.vit_e_mg_100g, f.vit_k_mcg_100g, f.caffeine_mg_100g,
+           f.water_g_100g, f.alcohol_g_100g,
            r.name as recipe_name,
            r.energy_kcal_per_portion, r.proteins_g_per_portion, r.carbohydrates_g_per_portion, r.sugars_g_per_portion, r.fiber_g_per_portion,
            r.fat_g_per_portion, r.saturated_fat_g_per_portion, r.salt_g_per_portion,

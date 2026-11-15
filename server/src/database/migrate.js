@@ -30,6 +30,13 @@ export function runMigrations(customDbPath = null) {
      'monounsaturated_fat_g_100g REAL'],
     ['foods', 'polyunsaturated_fat_g_100g',
      'polyunsaturated_fat_g_100g REAL'],
+    // Contenu en eau et en alcool : sans ces colonnes, la colonne "Eau" du
+    // Dashboard et l'indicateur "Eau" des analytics restaient structurellement
+    // a 0 (le SELECT ne selectionnait aucun champ eau).
+    ['foods', 'water_g_100g',
+     'water_g_100g REAL'],
+    ['foods', 'alcohol_g_100g',
+     'alcohol_g_100g REAL'],
     ['recipes', 'caffeine_mg_per_portion',
      'caffeine_mg_per_portion REAL'],
     // Micronutriments absents de `recipes` jusqu'a octobre 2026 : une recette

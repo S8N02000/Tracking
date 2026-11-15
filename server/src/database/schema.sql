@@ -95,6 +95,8 @@ CREATE TABLE IF NOT EXISTS foods (
     vit_e_mg_100g    REAL,
     vit_k_mcg_100g   REAL,
     caffeine_mg_100g     REAL,
+    water_g_100g     REAL,
+    alcohol_g_100g     REAL,
     source    TEXT    NOT NULL DEFAULT 'ciqual',
     notes     TEXT,
     is_active INTEGER NOT NULL DEFAULT 1,
