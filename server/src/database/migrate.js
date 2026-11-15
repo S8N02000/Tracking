@@ -26,6 +26,10 @@ export function runMigrations(customDbPath = null) {
      'portions_count REAL'],
     ['foods', 'caffeine_mg_100g',
      'caffeine_mg_100g REAL'],
+    ['foods', 'monounsaturated_fat_g_100g',
+     'monounsaturated_fat_g_100g REAL'],
+    ['foods', 'polyunsaturated_fat_g_100g',
+     'polyunsaturated_fat_g_100g REAL'],
     ['recipes', 'caffeine_mg_per_portion',
      'caffeine_mg_per_portion REAL'],
     // Micronutriments absents de `recipes` jusqu'a octobre 2026 : une recette
