@@ -1007,7 +1007,7 @@ const exportPDF = async () => {
   }
 };
 
-// Markdown Export Generator matching backup_reports format
+// Markdown Export Generator for LLM & Clinical Analysis
 const exportMarkdown = () => {
   if (!diagnostics.value) return;
   isGeneratingMd.value = true;
@@ -1019,149 +1019,255 @@ const exportMarkdown = () => {
     md += `# Rapport Nutritionnel — ${formatDate(startDate.value)} au ${formatDate(endDate.value)}\n\n`;
     md += `*Aucun repas enregistré sur cette période.*\n`;
   } else {
-    for (let i = 0; i < logs.length; i++) {
-      const dayLog = logs[i];
-      md += `# Rapport Nutritionnel — ${formatDate(dayLog.date)}\n\n`;
+    md += `# Rapport Nutritionnel & Bilan Clinique — ${formatDate(startDate.value)} au ${formatDate(endDate.value)}\n\n`;
 
-      // Petit-déjeuner
-      md += `## 🥄 Petit-déjeuner\n`;
-      if (dayLog.meals.petit_dejeuner.length === 0) {
-        md += `*Rien enregistré*\n\n`;
-      } else {
-        md += `| Aliment | Qté | kcal | P | G | L | Fibres |\n`;
-        md += `|---|---|---|---|---|---|---|\n`;
-        for (const item of dayLog.meals.petit_dejeuner) {
-          md += `| ${item.name} | ${item.qty_display} | ${item.kcal} | ${item.proteins_g} | ${item.carbs_g} | ${item.fat_g} | ${item.fiber_g} |\n`;
+    // 1. Découpage par semaine calendaire (lundi au dimanche)
+    const getWeekRange = (dateStr) => {
+      const parts = dateStr.split('-');
+      const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10), 12, 0, 0);
+      const day = d.getDay(); // 0 = Dimanche, 1 = Lundi, ...
+      const diffToMonday = day === 0 ? -6 : 1 - day;
+      const monday = new Date(d);
+      monday.setDate(d.getDate() + diffToMonday);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+
+      const toYMD = (date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const dayNum = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${dayNum}`;
+      };
+
+      return {
+        monday: toYMD(monday),
+        sunday: toYMD(sunday)
+      };
+    };
+
+    const weeksMap = new Map();
+    for (const dayLog of logs) {
+      const { monday, sunday } = getWeekRange(dayLog.date);
+      const weekKey = `${monday}_${sunday}`;
+      if (!weeksMap.has(weekKey)) {
+        weeksMap.set(weekKey, {
+          monday,
+          sunday,
+          days: []
+        });
+      }
+      weeksMap.get(weekKey).days.push(dayLog);
+    }
+
+    // 2. Parcourir chaque semaine
+    let weekIndex = 1;
+    for (const week of weeksMap.values()) {
+      md += `# 📅 Semaine ${weekIndex} — Du ${formatDate(week.monday)} au ${formatDate(week.sunday)}\n\n`;
+
+      // Détail de chaque jour de la semaine (SANS totaux journée)
+      for (const dayLog of week.days) {
+        md += `## 🗓️ Journée du ${formatDate(dayLog.date)}\n\n`;
+
+        // Petit-déjeuner
+        md += `### 🥄 Petit-déjeuner\n`;
+        if (!dayLog.meals.petit_dejeuner || dayLog.meals.petit_dejeuner.length === 0) {
+          md += `*Rien enregistré*\n\n`;
+        } else {
+          md += `| Aliment | Qté | kcal | P | G | L | Fibres |\n`;
+          md += `|---|---|---|---|---|---|---|\n`;
+          for (const item of dayLog.meals.petit_dejeuner) {
+            md += `| ${item.name} | ${item.qty_display} | ${item.kcal} | ${item.proteins_g} | ${item.carbs_g} | ${item.fat_g} | ${item.fiber_g} |\n`;
+          }
+          md += `\n`;
         }
-        md += `\n`;
-      }
 
-      // Déjeuner
-      md += `## 🌙 Déjeuner\n`;
-      if (dayLog.meals.dejeuner.length === 0) {
-        md += `*Rien enregistré*\n\n`;
-      } else {
-        md += `| Aliment | Qté | kcal | P | G | L | Fibres |\n`;
-        md += `|---|---|---|---|---|---|---|\n`;
-        for (const item of dayLog.meals.dejeuner) {
-          md += `| ${item.name} | ${item.qty_display} | ${item.kcal} | ${item.proteins_g} | ${item.carbs_g} | ${item.fat_g} | ${item.fiber_g} |\n`;
+        // Déjeuner
+        md += `### 🌙 Déjeuner\n`;
+        if (!dayLog.meals.dejeuner || dayLog.meals.dejeuner.length === 0) {
+          md += `*Rien enregistré*\n\n`;
+        } else {
+          md += `| Aliment | Qté | kcal | P | G | L | Fibres |\n`;
+          md += `|---|---|---|---|---|---|---|\n`;
+          for (const item of dayLog.meals.dejeuner) {
+            md += `| ${item.name} | ${item.qty_display} | ${item.kcal} | ${item.proteins_g} | ${item.carbs_g} | ${item.fat_g} | ${item.fiber_g} |\n`;
+          }
+          md += `\n`;
         }
-        md += `\n`;
-      }
 
-      // Dîner
-      md += `## 🍽️ Dîner\n`;
-      if (dayLog.meals.diner.length === 0) {
-        md += `*Rien enregistré*\n\n`;
-      } else {
-        md += `| Aliment | Qté | kcal | P | G | L | Fibres |\n`;
-        md += `|---|---|---|---|---|---|---|\n`;
-        for (const item of dayLog.meals.diner) {
-          md += `| ${item.name} | ${item.qty_display} | ${item.kcal} | ${item.proteins_g} | ${item.carbs_g} | ${item.fat_g} | ${item.fiber_g} |\n`;
+        // Dîner
+        md += `### 🍽️ Dîner\n`;
+        if (!dayLog.meals.diner || dayLog.meals.diner.length === 0) {
+          md += `*Rien enregistré*\n\n`;
+        } else {
+          md += `| Aliment | Qté | kcal | P | G | L | Fibres |\n`;
+          md += `|---|---|---|---|---|---|---|\n`;
+          for (const item of dayLog.meals.diner) {
+            md += `| ${item.name} | ${item.qty_display} | ${item.kcal} | ${item.proteins_g} | ${item.carbs_g} | ${item.fat_g} | ${item.fiber_g} |\n`;
+          }
+          md += `\n`;
         }
-        md += `\n`;
-      }
 
-      // Collation if any
-      if (dayLog.meals.collation.length > 0) {
-        md += `## 🍏 Collation\n`;
-        md += `| Aliment | Qté | kcal | P | G | L | Fibres |\n`;
-        md += `|---|---|---|---|---|---|---|\n`;
-        for (const item of dayLog.meals.collation) {
-          md += `| ${item.name} | ${item.qty_display} | ${item.kcal} | ${item.proteins_g} | ${item.carbs_g} | ${item.fat_g} | ${item.fiber_g} |\n`;
+        // Collation
+        if (dayLog.meals.collation && dayLog.meals.collation.length > 0) {
+          md += `### 🍏 Collation\n`;
+          md += `| Aliment | Qté | kcal | P | G | L | Fibres |\n`;
+          md += `|---|---|---|---|---|---|---|\n`;
+          for (const item of dayLog.meals.collation) {
+            md += `| ${item.name} | ${item.qty_display} | ${item.kcal} | ${item.proteins_g} | ${item.carbs_g} | ${item.fat_g} | ${item.fiber_g} |\n`;
+          }
+          md += `\n`;
         }
-        md += `\n`;
-      }
 
-      // Sport enrichi
-      md += `## 🏃 Activité Sportive\n`;
-      if (!dayLog.sports || dayLog.sports.length === 0) {
-        md += `*Aucune activité enregistrée*\n\n`;
-      } else {
-        md += `| Type | Durée | FC moy | Distance | Dénivelé | kcal |\n`;
-        md += `|---|---|---|---|---|---|\n`;
-        for (const sp of dayLog.sports) {
-          const fc = sp.avg_hr_bpm ? `${sp.avg_hr_bpm} bpm` : '—';
-          const dist = sp.distance_km ? `${sp.distance_km} km` : '—';
-          const deniv = sp.elevation_m ? `${sp.elevation_m} m` : '—';
-          md += `| ${sp.sport_type} | ${sp.duration_min} min | ${fc} | ${dist} | ${deniv} | ${sp.kcal_burned} |\n`;
+        // Activité sportive
+        if (dayLog.sports && dayLog.sports.length > 0) {
+          md += `### 🏃 Activité Sportive\n`;
+          md += `| Type | Durée | FC moy | Distance | Dénivelé | kcal |\n`;
+          md += `|---|---|---|---|---|---|\n`;
+          for (const sp of dayLog.sports) {
+            const fc = sp.avg_hr_bpm ? `${sp.avg_hr_bpm} bpm` : '—';
+            const dist = sp.distance_km ? `${sp.distance_km} km` : '—';
+            const deniv = sp.elevation_m ? `${sp.elevation_m} m` : '—';
+            md += `| ${sp.sport_type} | ${sp.duration_min} min | ${fc} | ${dist} | ${deniv} | ${sp.kcal_burned} |\n`;
+          }
+          md += `\n`;
+          const notes = dayLog.sports.filter(sp => sp.notes).map(sp => `  - *${sp.notes}*`).join('\n');
+          if (notes) md += `${notes}\n\n`;
         }
-        md += `\n`;
-        // Notes si présentes
-        const notes = dayLog.sports.filter(sp => sp.notes).map(sp => `  - *${sp.notes}*`).join('\n');
-        if (notes) md += `${notes}\n\n`;
-      }
 
-      // Boditrax (nouveaux scans depuis le dernier export)
-      if (dayLog.boditrax && dayLog.boditrax.length > 0) {
-        md += `## ⚖️ Boditrax\n`;
-        for (const scan of dayLog.boditrax) {
-          md += `- **${formatDate(scan.scan_date)}** — Poids: ${scan.weight_kg} kg | MG: ${scan.fat_pct}% (${scan.fat_mass_kg} kg) | Muscle: ${scan.muscle_mass_kg} kg\n`;
-          md += `  Eau: ${scan.water_mass_kg} kg | Graisse visc.: ${scan.visceral_fat_rating} | BMR: ${scan.bmr_kcal} kcal\n`;
+        // Boditrax
+        if (dayLog.boditrax && dayLog.boditrax.length > 0) {
+          md += `### ⚖️ Boditrax\n`;
+          for (const scan of dayLog.boditrax) {
+            md += `- **${formatDate(scan.scan_date)}** — Poids: ${scan.weight_kg} kg | MG: ${scan.fat_pct}% (${scan.fat_mass_kg} kg) | Muscle: ${scan.muscle_mass_kg} kg\n`;
+            md += `  Eau: ${scan.water_mass_kg} kg | Graisse visc.: ${scan.visceral_fat_rating} | BMR: ${scan.bmr_kcal} kcal\n`;
+          }
+          md += `\n`;
         }
-        md += `\n`;
       }
 
-      // Totaux journée
-      const t = dayLog.totals;
-      const kcalPct = t.target_kcal > 0 ? Math.round((t.kcal / t.target_kcal) * 100) : 0;
-      const protPct = t.target_proteins_g > 0 ? Math.round((t.proteins_g / t.target_proteins_g) * 100) : 0;
-      const carbsPct = t.target_carbs_g > 0 ? Math.round((t.carbs_g / t.target_carbs_g) * 100) : 0;
-      const fatPct = t.target_fat_g > 0 ? Math.round((t.fat_g / t.target_fat_g) * 100) : 0;
+      // Totaux et moyennes par jour de la semaine
+      const weekDaysCount = Math.max(week.days.length, 1);
+      let wKcal = 0;
+      let wProt = 0;
+      let wCarbs = 0;
+      let wSugars = 0;
+      let wFiber = 0;
+      let wFat = 0;
+      let wSatFat = 0;
+      let wSalt = 0;
 
-      md += `## 📊 Totaux journée\n`;
-      md += `| | Cible | Réel | % |\n`;
-      md += `|---|---|---|---|\n`;
-      md += `| **kcal** | ${t.target_kcal} | ${t.kcal} | ${kcalPct >= 90 ? '✅' : '⚠️'} ${kcalPct}% |\n`;
-      md += `| **Protéines** | ${t.target_proteins_g}g | ${t.proteins_g}g | ${protPct >= 90 ? '✅' : '⚠️'} ${protPct}% |\n`;
-      md += `| **Glucides** | ${t.target_carbs_g}g | ${t.carbs_g}g | ${carbsPct}% |\n`;
-      md += `| **Lipides** | ${t.target_fat_g}g | ${t.fat_g}g | ${fatPct >= 80 ? '✅' : '⚠️'} ${fatPct}% |\n\n`;
-
-      if (showAllMacros.value) {
-        // Profil Lipidique
-        const omega3 = t.omega_3_g || 0;
-        const omega6 = t.omega_6_g || 0;
-        const omegaRatio = omega3 > 0 ? (omega6 / omega3).toFixed(1) : '—';
-        md += `## 🐟 Profil Lipidique\n`;
-        md += `| | Valeur | Ratio |\n`;
-        md += `|---|---|---|\n`;
-        md += `| AGS | ${t.saturated_fat_g}g | |\n`;
-        md += `| **Oméga-3** | **${omega3}g** | |\n`;
-        md += `| **Oméga-6** | **${omega6}g** | |\n`;
-        md += `| **Ratio ω6/ω3** | | **${omegaRatio}:1** ${parseFloat(omegaRatio) <= 4.5 ? '✅' : '⚠️'} |\n\n`;
-
-        // Minéraux
-        md += `## 💊 Minéraux\n`;
-        md += `| Minéral | Apport | Cible | % VNR |\n`;
-        md += `|---|---|---|---|\n`;
-        md += `| Calcium | ${t.calcium_mg}mg | 1000mg | ${Math.round((t.calcium_mg / 1000) * 100)}% |\n`;
-        md += `| Fer | ${t.iron_mg}mg | 11mg | ${Math.round((t.iron_mg / 11) * 100)}% |\n`;
-        md += `| Magnésium | ${t.magnesium_mg}mg | 420mg | ${Math.round((t.magnesium_mg / 420) * 100)}% |\n`;
-        md += `| Potassium | ${t.potassium_mg}mg | 3500mg | ${Math.round((t.potassium_mg / 3500) * 100)}% |\n`;
-        md += `| Zinc | ${t.zinc_mg}mg | 11mg | ${Math.round((t.zinc_mg / 11) * 100)}% |\n`;
-        md += `| Phosphore | ${t.phosphorus_mg}mg | 700mg | ${Math.round((t.phosphorus_mg / 700) * 100)}% |\n\n`;
-
-        // Vitamines
-        md += `## 💊 Vitamines\n`;
-        md += `| Vitamine | Apport | Cible | % VNR |\n`;
-        md += `|---|---|---|---|\n`;
-        md += `| A (activité rétinol) | ${t.vit_a_mcg}µg | 750µg | ${Math.round((t.vit_a_mcg / 750) * 100)}% |\n`;
-        md += `| B1 | ${t.vit_b1_mg}mg | 1.2mg | ${Math.round((t.vit_b1_mg / 1.2) * 100)}% |\n`;
-        md += `| B2 | ${t.vit_b2_mg}mg | 1.6mg | ${Math.round((t.vit_b2_mg / 1.6) * 100)}% |\n`;
-        md += `| B3 | ${t.vit_b3_mg}mg | 16mg | ${Math.round((t.vit_b3_mg / 16) * 100)}% |\n`;
-        md += `| B6 | ${t.vit_b6_mg}mg | 1.7mg | ${Math.round((t.vit_b6_mg / 1.7) * 100)}% |\n`;
-        md += `| B9 (Folate) | ${t.vit_b9_mcg}µg | 330µg | ${Math.round((t.vit_b9_mcg / 330) * 100)}% |\n`;
-        md += `| B12 | ${t.vit_b12_mcg}µg | 4µg | ${Math.round((t.vit_b12_mcg / 4) * 100)}% |\n`;
-        md += `| C | ${t.vit_c_mg}mg | 110mg | ${Math.round((t.vit_c_mg / 110) * 100)}% |\n`;
-        md += `| D | ${t.vit_d_mcg}µg | 15µg | ${Math.round((t.vit_d_mcg / 15) * 100)}% |\n`;
-        md += `| E | ${t.vit_e_mg}mg | 15mg | ${Math.round((t.vit_e_mg / 15) * 100)}% |\n\n`;
+      for (const d of week.days) {
+        const t = d.totals || {};
+        wKcal += t.kcal || 0;
+        wProt += t.proteins_g || 0;
+        wCarbs += t.carbs_g || 0;
+        wSugars += t.sugars_g || 0;
+        wFiber += t.fiber_g || 0;
+        wFat += t.fat_g || 0;
+        wSatFat += t.saturated_fat_g || 0;
+        wSalt += t.salt_g || 0;
       }
 
-      // Add separator if multiple days
-      if (i < logs.length - 1) {
-        md += `---\n\n`;
+      const avgWKcal = Math.round(wKcal / weekDaysCount);
+      const avgWProt = Math.round((wProt / weekDaysCount) * 10) / 10;
+      const avgWCarbs = Math.round((wCarbs / weekDaysCount) * 10) / 10;
+      const avgWSugars = Math.round((wSugars / weekDaysCount) * 10) / 10;
+      const avgWFiber = Math.round((wFiber / weekDaysCount) * 10) / 10;
+      const avgWFat = Math.round((wFat / weekDaysCount) * 10) / 10;
+      const avgWSatFat = Math.round((wSatFat / weekDaysCount) * 10) / 10;
+      const avgWSalt = Math.round((wSalt / weekDaysCount) * 100) / 100;
+
+      md += `## 📊 Totaux semaine (${weekDaysCount} jour${weekDaysCount > 1 ? 's' : ''} enregistrés)\n`;
+      md += `| Nutriment | Total Semaine | Moyenne / jour | Cible / jour | % Cible |\n`;
+      md += `|---|---|---|---|---|\n`;
+      md += `| **Calories** | ${Math.round(wKcal)} kcal | ${avgWKcal} kcal | 2000 kcal | ${Math.round((avgWKcal / 2000) * 100)}% |\n`;
+      md += `| **Protéines** | ${Math.round(wProt * 10) / 10} g | ${avgWProt} g | 70 g | ${Math.round((avgWProt / 70) * 100)}% |\n`;
+      md += `| **Glucides** | ${Math.round(wCarbs * 10) / 10} g | ${avgWCarbs} g | 250 g | ${Math.round((avgWCarbs / 250) * 100)}% |\n`;
+      md += `| **Sucres simples** | ${Math.round(wSugars * 10) / 10} g | ${avgWSugars} g | <= 50 g | ${Math.round((avgWSugars / 50) * 100)}% |\n`;
+      md += `| **Fibres alimentaires** | ${Math.round(wFiber * 10) / 10} g | ${avgWFiber} g | >= 30 g | ${Math.round((avgWFiber / 30) * 100)}% |\n`;
+      md += `| **Lipides totaux** | ${Math.round(wFat * 10) / 10} g | ${avgWFat} g | 70 g | ${Math.round((avgWFat / 70) * 100)}% |\n`;
+      md += `| **Graisses saturées (Sat.)** | ${Math.round(wSatFat * 10) / 10} g | ${avgWSatFat} g | <= 20 g | ${Math.round((avgWSatFat / 20) * 100)}% |\n`;
+      md += `| **Sel (NaCl)** | ${Math.round(wSalt * 100) / 100} g | ${avgWSalt} g | <= 5 g | ${Math.round((avgWSalt / 5) * 100)}% |\n\n`;
+
+      md += `---\n\n`;
+      weekIndex++;
+    }
+
+    // 3. Totaux complets de la période (les 40 nutriments demandés)
+    md += `# 📊 TOTAUX DE LA PÉRIODE (${diagnostics.value.summary.total_days} jours)\n\n`;
+    md += `## 💊 APPORTS EN VITAMINES, MINÉRAUX & MACRO-NUTRIMENTS (TOUT LES MACRO)\n\n`;
+    md += `| Catégorie | Nutriment | Total Période | Apport Moyen / jour | Cible (ARJ) | % ARJ | Statut |\n`;
+    md += `|---|---|---|---|---|---|---|\n`;
+
+    // Ordre exhaustif exact des 40 nutriments demandés
+    const requestedNutrientsOrder = [
+      'kcal',
+      'proteins',
+      'carbs',
+      'sugars',
+      'fiber',
+      'fat',
+      'saturated_fat',
+      'salt',
+      'monounsaturated_fat',
+      'polyunsaturated_fat',
+      'omega_3',
+      'omega_6',
+      'trans_fat',
+      'cholesterol',
+      'sodium',
+      'calcium',
+      'iron',
+      'magnesium',
+      'phosphorus',
+      'potassium',
+      'zinc',
+      'copper',
+      'manganese',
+      'selenium',
+      'iodine',
+      'vit_a',
+      'vit_d',
+      'vit_e',
+      'vit_k',
+      'vit_c',
+      'vit_b1',
+      'vit_b2',
+      'vit_b3',
+      'vit_b5',
+      'vit_b6',
+      'vit_b9',
+      'vit_b12',
+      'water',
+      'alcohol',
+      'caffeine'
+    ];
+
+    const nutrientsMap = new Map((diagnostics.value.nutrients || []).map(n => [n.id, n]));
+
+    for (const nutId of requestedNutrientsOrder) {
+      const nut = nutrientsMap.get(nutId);
+      if (nut) {
+        const totalDisplay = nut.total_intake != null ? `${nut.total_intake} ${nut.unit}` : `0 ${nut.unit}`;
+        const avgDisplay = `${nut.avg_intake} ${nut.unit}`;
+        const targetDisplay = nut.target > 0 ? `${nut.target} ${nut.unit}` : `0 ${nut.unit}`;
+        const pctDisplay = nut.target > 0 ? `${nut.percentage_arj}%` : `0%`;
+        const statusLabel = formatNutrientStatusLabel(nut.status);
+        md += `| ${nut.category} | ${nut.name} | ${totalDisplay} | ${avgDisplay} | ${targetDisplay} | ${pctDisplay} | ${statusLabel} |\n`;
       }
     }
+    md += `\n`;
+
+    // 4. Ratios cliniques & Équilibres biomédicaux (Screenshot 2)
+    md += `## ⚖️ RATIOS CLINIQUES & ÉQUILIBRES BIOMÉDICAUX\n\n`;
+    md += `| Ratio / Biomarqueur | Valeur Mesurée | Objectif Cible | Statut |\n`;
+    md += `|---|---|---|---|\n`;
+
+    for (const r of diagnostics.value.ratios || []) {
+      const statusLabel = formatStatusLabel(r.status);
+      md += `| **${r.label}** | **${r.value} ${r.unit}** | ${r.target_label} | ${statusLabel} |\n`;
+    }
+    md += `\n`;
   }
 
   // Download blob
