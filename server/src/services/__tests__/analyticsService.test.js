@@ -5,7 +5,8 @@ import {
   getCorrelationSeries,
   getMicronutrientsRadar,
   getMealDistribution,
-  getClinicalDiagnostics
+  getClinicalDiagnostics,
+  formatGrams
 } from '../analyticsService.js';
 import { makeTempDbPath, removeTempDb } from '../../test-utils/tempDb.js';
 
@@ -200,3 +201,31 @@ describe('Analytics Service Unit Tests', () => {
   });
 });
 
+
+describe('formatGrams (affichage des complements)', () => {
+  it('conserve les decimales sous 10 g', () => {
+    expect(formatGrams(0.09)).toBe('0.09g');
+    expect(formatGrams(0.35)).toBe('0.35g');
+    expect(formatGrams(0.95)).toBe('0.95g');
+    expect(formatGrams(1.9)).toBe('1.9g');
+    expect(formatGrams(3.3)).toBe('3.3g');
+  });
+
+  it('arrondi a l entier au-dela de 10 g', () => {
+    expect(formatGrams(113)).toBe('113g');
+    expect(formatGrams(2500)).toBe('2500g');
+    expect(formatGrams(10)).toBe('10g');
+  });
+
+  it('ne renvoie jamais 0g pour un grammage non nul', () => {
+    for (const g of [0.01, 0.09, 0.35, 0.95, 1.9]) {
+      expect(formatGrams(g)).not.toBe('0g');
+    }
+  });
+
+  it('gere les valeurs invalides', () => {
+    expect(formatGrams(null)).toBe('0g');
+    expect(formatGrams(undefined)).toBe('0g');
+    expect(formatGrams('abc')).toBe('0g');
+  });
+});

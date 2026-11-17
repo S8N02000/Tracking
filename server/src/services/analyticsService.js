@@ -2,6 +2,22 @@ import { getDailyDashboard } from './dashboardAggregator.js';
 import { getDatabase } from '../database/db.js';
 import { getPralRatio } from './pralService.js';
 
+/**
+ * Formate un grammage pour l'affichage.
+ * Les compléments pèsent souvent moins de 1 g par unité (goutte 0,03 g,
+ * gélule 0,35 g) : un arrondi à l'entier affichait "0 g" et faisait croire à
+ * une saisie perdue. On garde 2 décimales sous 10 g, entier au-delà.
+ */
+export function formatGrams(grams) {
+  const g = Number(grams);
+  if (!Number.isFinite(g)) return '0g';
+  if (Math.abs(g) < 10) {
+    const s = g.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+    return `${s}g`;
+  }
+  return `${Math.round(g)}g`;
+}
+
 export function getCorrelationSeries(startDateStr, endDateStr, customDb = null) {
   const dashboard = getDailyDashboard(startDateStr, endDateStr, customDb);
   let cumulativeCaloricBalance = 0;
@@ -1253,7 +1269,7 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
     let carbs = 0;
     let fat = 0;
     let fiber = 0;
-    let qtyDisplay = `${Math.round(m.quantity_g)}g`;
+    let qtyDisplay = formatGrams(m.quantity_g);
 
     if (m.food_id && m.food_name) {
       foodName = m.food_name;
@@ -1264,9 +1280,9 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
       fat = Math.round(((m.fat_g_100g || 0) * factor) * 10) / 10;
       fiber = Math.round(((m.fiber_g_100g || 0) * factor) * 10) / 10;
       if (m.original_qty && m.original_unit && m.original_unit !== 'g') {
-        qtyDisplay = `${m.original_qty}${m.original_unit} (${Math.round(m.quantity_g)}g)`;
+        qtyDisplay = `${m.original_qty}${m.original_unit} (${formatGrams(m.quantity_g)})`;
       } else {
-        qtyDisplay = `${Math.round(m.quantity_g)}g`;
+        qtyDisplay = formatGrams(m.quantity_g);
       }
     } else if (m.recipe_id && m.recipe_name) {
       foodName = m.recipe_name;
@@ -1280,7 +1296,7 @@ export function getClinicalDiagnostics(startDateStr, endDateStr, customDb = null
       fiber = Math.round(((m.fiber_g_per_portion || 0) * portions) * 10) / 10;
       qtyDisplay = m.portions_count != null
         ? `${m.portions_count} portion${m.portions_count > 1 ? 's' : ''}`
-        : `${Math.round(m.quantity_g)}g`;
+        : `${formatGrams(m.quantity_g)}`;
     }
 
     const periodKey = dayLog.meals[m.period] ? m.period : 'collation';
